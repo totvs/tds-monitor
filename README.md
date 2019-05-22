@@ -37,4 +37,4 @@ Ele utiliza os protocolos de comunicação LSP (Language Server Protocol) que é
 
 ## Problemas Conhecidos
 
-* NT.
+* Falta de atualização e de comandos na visão.
