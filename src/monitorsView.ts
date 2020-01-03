@@ -54,7 +54,7 @@ export class MonitorsExplorer {
 		//Comando para renomear item da visão de monitor.
 		context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.rename', (serverItem: MonitorItem) => renameMonitor(serverItem)));
 		//Comando para mostrar todas as informações do servidor selecionado.
-		context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.showInfos', (serverItem: MonitorItem) => showInfos(panelInfos, context, serverItem)))
+		context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.showInfos', (serverItem: MonitorItem) => showInfos(context, serverItem)))
 	}
 
 }
@@ -320,7 +320,7 @@ function addMonitor(panelAdd, context) {
 	}
 }
 
-function showInfos(panelInfos, context, serverItem) {
+function showInfos(context, serverItem) {
 	if (panelInfos) {
 		panelInfos.reveal();
 	} else {
