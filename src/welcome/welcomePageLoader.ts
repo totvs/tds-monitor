@@ -77,6 +77,12 @@ export class WelcomePageLoader {
     return config.get("welcomePage", true);
   }
 
+
+  private getServerJsonLocation(): string {
+    const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
+    return config.get("servers.json", "user");
+  }
+
   private async handleMessage(command: IWelcomePageAction) {
     switch (command.action) {
       case WelcomePageAction.SetShowWelcomePage: {
@@ -102,8 +108,28 @@ export class WelcomePageLoader {
       )
     );
 
+    // const homedir = require("os").homedir();
+// const userFile = path.join(homedir, ".totvsls", "servers.json");
+// const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
+// const workspaceFile = "./monitor.json";
+
+// const uri = vscode.Uri.parse("file:///.");
+// const folder = vscode.workspace.getWorkspaceFolder(uri);
+
+//   if (folder) {
+//   const configFile = path.join(folder.uri.fsPath, "servers.json");
+//   if (fs.existsSync(configFile)) {
+//     return configFile;
+//   }
+//   }
+
     const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
-    const initialData = JSON.stringify({ showWelcomePage: this.isShowWelcomePage() });
+    const initialData = JSON.stringify(
+      {
+        showWelcomePage: this.isShowWelcomePage(),
+        serverJsonLocation: this.getServerJsonLocation()
+
+      });
 
     return `<!DOCTYPE html>
     <html lang="en">

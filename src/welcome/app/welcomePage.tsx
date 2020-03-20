@@ -3,28 +3,20 @@ import * as React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 
 import {
-  Paper,
   Grid,
   Theme,
   createStyles,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  FormLabel,
-  GridSpacing,
-  Typography,
-  Divider
+  Typography
 } from "@material-ui/core";
 import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
+import SettingsPanel from "./settingsPanel";
+import TextPanel from "./textPanel";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      flexGrow: 1
-    },
-    paper: {
-      height: 300
+      flexGrow: 1,
     },
     control: {
       padding: theme.spacing(2)
@@ -35,15 +27,12 @@ const useStyles = makeStyles((theme: Theme) =>
 interface IWelcomePageProps {
   vscode: any;
   showWelcomePage: boolean;
+  serverJsonLocation: string;
 }
 
 export default function WelcomePage(props: IWelcomePageProps) {
-  const [spacing, setSpacing] = React.useState<GridSpacing>(2);
   const classes = useStyles();
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSpacing(Number((event.target as HTMLInputElement).value) as GridSpacing);
-  };
+  console.log("******.4");
 
   return (
     <React.Fragment>
@@ -52,43 +41,23 @@ export default function WelcomePage(props: IWelcomePageProps) {
           <Typography variant="subtitle1" component="h2">
             TDS Monitor
           </Typography>
-          <Divider />
-          <Grid container className={classes.root} spacing={2}>
-            <Grid item xs={12}>
-              <Grid container justify="center" spacing={spacing}>
-                {[0, 1].map(value => (
-                  <Grid key={value} item xs={6}>
-                    <Paper className={classes.paper}>
-                      <Typography># {value}</Typography>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
+
+          <Typography variant="body2">
+            A extensão <strong>TOTVS Developer Studio Monitor </strong> (
+            <i>TDS Monitor</i>) permite monitorar o uso e a administração básica
+            de servidores <strong>Potheus</strong>.
+          </Typography>
+
+          <Grid container className={classes.root} justify="center" >
+            <Grid item xs={6}>
+              <TextPanel />
             </Grid>
-            <Grid item xs={12}>
-              <Paper className={classes.control}>
-                <Grid container>
-                  <Grid item>
-                    <FormLabel>spacing</FormLabel>
-                    <RadioGroup
-                      name="spacing"
-                      aria-label="spacing"
-                      value={spacing.toString()}
-                      onChange={handleChange}
-                      row
-                    >
-                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => (
-                        <FormControlLabel
-                          key={value}
-                          value={value.toString()}
-                          control={<Radio />}
-                          label={value.toString()}
-                        />
-                      ))}
-                    </RadioGroup>
-                  </Grid>
-                </Grid>
-              </Paper>
+            <Grid item xs={6}>
+              <SettingsPanel
+                vscode={props.vscode}
+                showWelcomePage={props.showWelcomePage}
+                serverJsonLocation={props.serverJsonLocation}
+              />
             </Grid>
           </Grid>
         </MonitorTheme>

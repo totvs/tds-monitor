@@ -34,6 +34,7 @@
   },
   "scripts": {
     "prepare": "tsc -p ./src",
+    "clear": "del ./out",
     "compile": "npm-run-all compile:*",
     "watch": "npm-run-all -p watch:*",
     "compile:extension": "tsc -p ./src",

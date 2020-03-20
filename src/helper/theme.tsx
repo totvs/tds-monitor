@@ -7,11 +7,11 @@ import { indigo, lightBlue, red } from "@material-ui/core/colors";
 
 let darkTheme = createMuiTheme({
   overrides: {
-    MuiDivider: {
+    MuiDivider: {},
+    MuiPaper: {},
+    MuiGrid: {
 
-	},
-	MuiPaper: {
-	}
+    },
   },
   palette: {
     //  type: "dark",
@@ -35,6 +35,7 @@ let lightTheme = createMuiTheme({
 interface IMonitorThemeProps {
   children: any;
 }
+
 export default function MonitorTheme(props: IMonitorThemeProps) {
   const prefersDarkMode = true; //useMediaQuery("(prefers-color-scheme: dark)");
 
