@@ -41,11 +41,6 @@ export class WelcomePageLoader {
       }
     );
 
-    // const onDiskPath = vscode.Uri.file(
-    //   path.join(this._extensionPath, 'media', 'cat.gif')
-    // );
-    // const catGifSrc = this._panel.webview.asWebviewUri(onDiskPath);
-
     this._panel.webview.html = this.getWebviewContent();
 
     this._panel.onDidDispose((event) => {

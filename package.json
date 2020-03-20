@@ -84,7 +84,8 @@
   },
   "main": "./out/extension",
   "activationEvents": [
-    "onView:tds_monitor"
+    "onView:tds_monitor",
+    "onCommand:tds-monitor.*"
   ],
   "contributes": {
     "languages": [],

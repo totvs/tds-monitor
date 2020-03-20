@@ -1,8 +1,8 @@
-import { AddServerLoader } from './wizard/addServer/addServerLoader';
 import { serverManager } from './model/monitorManager';
 import { MonitorItem } from './model/monitorItem';
 import * as vscode from 'vscode';
 import { IMonitorItem } from './monitorInterfaces';
+import { AddServerLoader } from './addServer';
 
 export class ServerCommands {
 

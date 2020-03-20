@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { IMonitorItem } from "../../monitorInterfaces";
-import { IWizardAction, WizardAction } from "../action";
+import { IMonitorItem } from "../monitorInterfaces";
+import { IAddServerAction, AddServerAction } from "./action";
 
 export class AddServerLoader {
   protected readonly _panel: vscode.WebviewPanel | undefined;
@@ -11,8 +11,7 @@ export class AddServerLoader {
   constructor(newServer: IMonitorItem, extensionPath: string) {
     this._extensionPath = extensionPath;
 
-    let config = newServer;
-    if (config) {
+    if (newServer) {
       this._panel = vscode.window.createWebviewPanel(
         "addServerLoader",
         "Assistente: Novo Servidor",
@@ -27,10 +26,10 @@ export class AddServerLoader {
         }
       );
 
-      this._panel.webview.html = this.getWebviewContent(config);
+      this._panel.webview.html = this.getWebviewContent(newServer);
 
       this._panel.webview.onDidReceiveMessage(
-        (command: IWizardAction) => {
+        (command: IAddServerAction) => {
           switch (command.action) {
             // case WizardAction.Save:
             //   //this.saveFileContent(command.content);
@@ -46,7 +45,7 @@ export class AddServerLoader {
 
             //   break;
           }
-          this.updatePanel(config);
+          this.updatePanel(newServer);
         },
         undefined,
         this._disposables
@@ -54,7 +53,7 @@ export class AddServerLoader {
     }
   }
 
-  private getWebviewContent(config: IMonitorItem): string {
+  private getWebviewContent(monitorItem: IMonitorItem): string {
     // Local path to main script run in the webview
     const reactAppPathOnDisk = vscode.Uri.file(
       path.join(
@@ -65,7 +64,7 @@ export class AddServerLoader {
       )
     );
     const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
-    const configJson = JSON.stringify(config);
+    const configJson = JSON.stringify(monitorItem);
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -116,7 +115,7 @@ export class AddServerLoader {
   private updatePanel(config: any) {
     this._panel?.webview.postMessage({
       error: config.buildVersion === "" ? "Erro de validação." : "",
-      command: WizardAction.UpdateWizard,
+      command: AddServerAction.UpdateWizard,
       data: config
     });
   }
