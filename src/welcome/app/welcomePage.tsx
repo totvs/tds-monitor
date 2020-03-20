@@ -28,11 +28,11 @@ interface IWelcomePageProps {
   vscode: any;
   showWelcomePage: boolean;
   serverJsonLocation: string;
+  optionsLocation: any;
 }
 
 export default function WelcomePage(props: IWelcomePageProps) {
   const classes = useStyles();
-  console.log("******.4");
 
   return (
     <React.Fragment>
@@ -57,6 +57,7 @@ export default function WelcomePage(props: IWelcomePageProps) {
                 vscode={props.vscode}
                 showWelcomePage={props.showWelcomePage}
                 serverJsonLocation={props.serverJsonLocation}
+                optionsLocation={props.optionsLocation}
               />
             </Grid>
           </Grid>

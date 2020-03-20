@@ -11,9 +11,13 @@ declare global {
 
 const vscode = window.acquireVsCodeApi();
 const showWelcomePage = window.initialData.showWelcomePage;
-const serverJsonLocation = window.initialData;
+const serverJsonLocation = window.initialData.serverJsonLocation;
+const optionsLocation = window.initialData.optionsLocation;
 
 ReactDOM.render(
-  <WelcomePage  vscode={vscode} showWelcomePage={showWelcomePage} serverJsonLocation={serverJsonLocation}/>,
+  <WelcomePage  vscode={vscode} showWelcomePage={showWelcomePage}
+   serverJsonLocation={serverJsonLocation}
+   optionsLocation={optionsLocation}
+   />,
   document.getElementById("root")
 );

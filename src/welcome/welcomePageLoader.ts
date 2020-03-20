@@ -53,6 +53,7 @@ export class WelcomePageLoader {
     });
 
     this._panel.webview.onDidReceiveMessage(
+
       (command: IWelcomePageAction) => {
         this.handleMessage(command);
       },
@@ -77,16 +78,33 @@ export class WelcomePageLoader {
     return config.get("welcomePage", true);
   }
 
-
   private getServerJsonLocation(): string {
     const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
     return config.get("servers.json", "user");
   }
 
+  private setServerJsonLocation(value: string) {
+    const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
+    return config.update("servers.json", value);
+  }
+
+  private getOptionsLocation(): any {
+    const homedir = require("os").homedir();
+    const userFile = path.join(homedir, ".totvsls", "servers.json");
+    const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
+    const workspaceFile = path.join(vscode.workspace.rootPath, ".tds", "monitor.json");
+
+    return { userFile: userFile, monitorFile: monitorFile, workspaceFile: workspaceFile };
+  }
+
   private async handleMessage(command: IWelcomePageAction) {
     switch (command.action) {
-      case WelcomePageAction.SetShowWelcomePage: {
-        this.setShowWelcomePage(command.content);
+      case WelcomePageAction.Save: {
+        const content = command.content;
+
+        this.setShowWelcomePage(content.showWelcomePage);
+        this.setServerJsonLocation(content.serverJsonLocation);
+
         break;
       }
       default:
@@ -96,6 +114,10 @@ export class WelcomePageLoader {
         break;
     }
   }
+
+  // const userFile = path.join(homedir, ".totvsls", "servers.json");
+  // const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
+  // const workspaceFile = "./monitor.json";
 
   private getWebviewContent(): string {
     // Local path to main script run in the webview
@@ -108,27 +130,12 @@ export class WelcomePageLoader {
       )
     );
 
-    // const homedir = require("os").homedir();
-// const userFile = path.join(homedir, ".totvsls", "servers.json");
-// const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
-// const workspaceFile = "./monitor.json";
-
-// const uri = vscode.Uri.parse("file:///.");
-// const folder = vscode.workspace.getWorkspaceFolder(uri);
-
-//   if (folder) {
-//   const configFile = path.join(folder.uri.fsPath, "servers.json");
-//   if (fs.existsSync(configFile)) {
-//     return configFile;
-//   }
-//   }
-
     const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
     const initialData = JSON.stringify(
       {
         showWelcomePage: this.isShowWelcomePage(),
-        serverJsonLocation: this.getServerJsonLocation()
-
+        serverJsonLocation: this.getServerJsonLocation(),
+        optionsLocation: this.getOptionsLocation()
       });
 
     return `<!DOCTYPE html>

@@ -4,5 +4,5 @@ export interface IWelcomePageAction {
 }
 
 export enum WelcomePageAction {
-  SetShowWelcomePage
+  Save
 }
