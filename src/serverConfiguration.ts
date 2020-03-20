@@ -3,7 +3,6 @@ export interface ServerConfiguration {
 	token: string;
 	name: string;
 	environments: string[];
-	isConnected: boolean;
 
 	//última conexão
 	environment: string;

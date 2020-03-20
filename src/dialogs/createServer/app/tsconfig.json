@@ -1,17 +1,15 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "es6",
         "moduleResolution": "node",
         "target": "es6",
-        "outDir": "../out",
+        "outDir": "createServer",
         "lib": [
             "es6",
             "dom"
-        ],
+        ],  
         "jsx": "react",
         "sourceMap": true,
-        "mapRoot": "../out",
-        "alwaysStrict": true,
         "noUnusedLocals": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,

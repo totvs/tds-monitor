@@ -1,218 +1,230 @@
 {
-	"name": "tds-monitor",
-	"displayName": "Totvs Monitor for VSCode",
-	"description": "%tds.package.description%",
-	"version": "0.0.7",
-	"publisher": "TOTVS",
-	"author": {
-		"name": "TOTVS",
-		"email": "tecnologia@totvs.com.br"
-	},
-	"license": "MIT",
-	"keywords": [
-		"multi-root ready"
-	],
-	"engines": {
-		"vscode": "^1.29.0",
-		"node": "^8.9.3"
-	},
-	"icon": "imagens/totvs-developer-studio.png",
-	"categories": [
-		"Other"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/totvs/tds-monitor.git"
-	},
-	"bugs": {
-		"url": "https://github.com/totvs/tds-monitor/issues"
-	},
-	"scripts": {
-		"prepare": "tsc -p ./src",
-		"compile": "tsc -p ./src",
-		"tslint": "tslint ./src/**/*.ts",
-		"watch": "tsc -w -p ./src",
-		"test": "mocha -u tdd ./out/tests/",
-		"postinstall": "node ./node_modules/vscode/bin/install",
-		"package": "vsce package",
-		"publish": "vsce publish"
-	},
-	"dependencies": {
-		"@totvs/tds-ls": "^1.0.21",
-		"await-notify": "1.0.1",
-		"cheerio": "^1.0.0-rc.3",
-		"fs": "0.0.1-security",
-		"strip-json-comments": "^2.0.1",
-		"template-literal": "^1.0.3",
-		"tmp": "^0.1.0",
-		"vscode-languageclient": "^4.4.2",
-		"vscode-nls": "^4.1.0",
-		"zlib": "^1.0.5"
-	},
-	"devDependencies": {
-		"@types/mocha": "5.2.5",
-		"@types/node": "8.9.3",
-		"del": "^4.1.1",
-		"gulp": "^4.0.2",
-		"gulp-sourcemaps": "^2.6.5",
-		"gulp-tslint": "^8.1.4",
-		"gulp-typescript": "^5.0.1",
-		"gulp-util": "^3.0.8",
-		"mocha": "5.2.0",
-		"tslint": "5.11.0",
-		"typescript": "3.1.6",
-		"vsce": "1.53.0",
-		"vscode": "^1.1.34",
-		"vscode-nls-dev": "^3.2.6"
-	},
-	"main": "./out/extension",
-	"activationEvents": [
-		"onView:totvs_monitor"
-	],
-	"contributes": {
-		"languages": [],
-		"grammars": [],
-		"snippets": [],
-		"configurationDefaults": {},
-		"configuration": {
-			"type": "object",
-			"title": "Monitor",
-			"properties": {
-				"totvsLanguageServer.launch.args": {
-					"type": "array",
-					"default": [],
-					"description": "%tds.package.args.for.lsp%"
-				},
-				"totvsLanguageServer.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 20,
-					"description": "%tds.package.max.problems.server%"
-				},
-				"totvsLanguageServer.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "%tds.package.trace.vscode.server%"
-				},
-				"totvsLanguageServer.welcomePage": {
-					"scope": "window",
-					"type": "boolean",
-					"default": true,
-					"description": "%tds.package.show.welcome.first.initialize%"
-				}
-			}
-		},
-		"commands": [
-			{
-				"command": "tds-monitor.connect",
-				"title": "%tds.package.connect%",
-				"category": "TOTVS"
-			},
-			{
-				"command": "tds-monitor.disconnect",
-				"title": "%tds.package.disconnect%",
-				"category": "TOTVS"
-			},
-			{
-				"command": "tds-monitor.add",
-				"title": "%tds.package.add%",
-				"icon": {
-					"light": "resources/light/add.png",
-					"dark": "resources/dark/add.png"
-				},
-				"category": "TOTVS"
-			},
-			{
-				"command": "tds-monitor.rename",
-				"title": "%tds.package.rename%",
-				"category": "TOTVS"
-			},
-			{
-				"command": "tds-monitor.showInfos",
-				"title": "%tds.package.showInfos%",
-				"category": "TOTVS"
-			}
-		],
-		"keybindings": [],
-		"breakpoints": [],
-		"debuggers": [],
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "totvs-plataform",
-					"title": "TOTVS",
-					"icon": "imagens/totvs24x24.png"
-				}
-			]
-		},
-		"views": {
-			"totvs-plataform": [
-				{
-					"id": "totvs_monitor",
-					"name": "%tds.package.monitor.view%"
-				}
-			]
-		},
-		"menus": {
-			"explorer/context": [],
-			"view/item/context": [
-				{
-					"command": "tds-monitor.connect",
-					"when": "view == totvs_monitor",
-					"group": "AtotvsMonitor@1"
-				},
-				{
-					"command": "tds-monitor.disconnect",
-					"when": "view == totvs_monitor",
-					"group": "AtotvsMonitor@2"
-				},
-				{
-					"command": "tds-monitor.add",
-					"when": "view == totvs_monitor",
-					"group": "BtotvsMonitor@1"
-				},
-				{
-					"command": "tds-monitor.rename",
-					"when": "view == totvs_monitor && viewItem == monitorItem",
-					"group": "BtotvsMonitor@2"
-				},
-				{
-					"command": "tds-monitor.showInfos",
-					"when": "view == totvs_monitor && viewItem == monitorItem",
-					"group": "CtotvsMonitor@1"
-				}
-			],
-			"view/title": [
-				{
-					"command": "tds-monitor.add",
-					"when": "view == totvs_monitor",
-					"group": "navigation"
-				}
-			],
-			"commandPalette": [
-				{
-					"command": "tds-monitor.disconnect",
-					"when": "1 == 0"
-				},
-				{
-					"command": "tds-monitor.connect",
-					"when": "1 == 0"
-				},
-				{
-					"command": "tds-monitor.rename",
-					"when": "1 == 0"
-				},
-				{
-					"command": "tds-monitor.showInfos",
-					"when": "1 == 0"
-				}
-			]
-		}
-	}
+  "name": "tds-monitor",
+  "displayName": "TDS Monitor for VSCode",
+  "description": "%tds.package.description%",
+  "version": "0.1.0",
+  "publisher": "TOTVS",
+  "author": {
+    "name": "TOTVS",
+    "email": "tecnologia@totvs.com.br"
+  },
+  "license": "MIT",
+  "keywords": [
+    "advpl",
+    "tlpp",
+    "4gl",
+    "tds",
+    "totvs",
+    "monitor"
+  ],
+  "engines": {
+    "vscode": "^1.29.0",
+    "node": "^8.9.3"
+  },
+  "icon": "imagens/tds-monitor.png",
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/totvs/tds-monitor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/totvs/tds-monitor/issues"
+  },
+  "scripts": {
+    "prepare": "tsc -p ./src",
+    "compile": "npm-run-all compile:*",
+    "watch": "npm-run-all -p watch:*",
+    "compile:extension": "tsc -p ./src",
+    "compile:views": "webpack --mode development",
+    "watch:extension": "tsc -w -p ./src",
+    "watch:views": "webpack --watch --mode development",
+    "tslint": "tslint ./src/**/*.ts",
+    "package": "npm run compile && vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.9.5",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.45",
+    "@totvs/tds-da": "^1.1.3",
+    "@totvs/tds-ls": "^1.1.4",
+    "@types/jszip": "^3.1.7",
+    "@types/node": "^13.9.1",
+    "@types/react": "^16.9.23",
+    "@types/vscode": "^1.43.0",
+    "core-js": "^3.6.4",
+    "ini": "^1.3.5",
+    "jszip": "^3.2.2",
+    "material-table": "^1.57.2",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "strip-json-comments": "^3.0.1",
+    "template-literal": "^1.0.3",
+    "tmp": "^0.1.0",
+    "typescript": "3.8.3",
+    "vscode-debugadapter": "^1.39.1",
+    "vscode-languageclient": "^6.1.1",
+    "vscode-nls": "^4.1.2",
+    "zlib": "^1.0.5"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^16.9.5",
+    "cleanup": "^0.3.0",
+    "css-loader": "^3.4.2",
+    "npm-run-all": "^4.1.5",
+    "style-loader": "^1.1.3",
+    "ts-loader": "^6.2.1",
+    "tslint": "6.1.0",
+    "vsce": "^1.74.0",
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.10"
+  },
+  "main": "./out/extension",
+  "activationEvents": [
+    "onView:tds_monitor"
+  ],
+  "contributes": {
+    "languages": [],
+    "grammars": [],
+    "snippets": [],
+    "configurationDefaults": {},
+    "configuration": {
+      "type": "object",
+      "title": "TDS Monitor",
+      "properties": {
+        "tdsMonitor.servers.json": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "user",
+            "user_monitor",
+            "workspace"
+          ],
+          "default": "user",
+          "description": "Indica qual arquivo de definição de servidores a utilizar.",
+          "enumDescriptions": [
+            "Utiliza o arquivo [<user_home>/.totvslsv/server.json], ou seja, o mesmo do TDS-VSCode.",
+            "Utiliza o arquivo [<user_home>/.totvslsv/monitor.json].",
+            "Utiliza o arquivo [monitor.json] existente na área de trabalho."
+          ]
+        },
+        "tdsMonitor.welcomePage": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+		  "description": "Apresentar a página de boas vindas do TDS Monitor ao iniciar."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "tds-monitor.showWelcomePage",
+        "title": "Boas vindas",
+        "category": "TDSMonitor"
+      },
+      {
+        "command": "tds-monitor.connect",
+        "title": "%tds.package.connect%",
+        "category": "TDSMonitor"
+      },
+      {
+        "command": "tds-monitor.disconnect",
+        "title": "%tds.package.disconnect%",
+        "category": "TDSMonitor"
+      },
+      {
+        "command": "tds-monitor.add",
+        "title": "%tds.package.add%",
+        "icon": {
+          "light": "resources/light/add.png",
+          "dark": "resources/dark/add.png"
+        },
+        "category": "TOTVS"
+      },
+      {
+        "command": "tds-monitor.rename",
+        "title": "%tds.package.rename%",
+        "category": "TDSMonitor"
+      },
+      {
+        "command": "tds-monitor.monitor",
+        "title": "Visão Monitor",
+        "category": "TDSMonitor"
+      },
+      {
+        "command": "tds-monitor.monitor.toggle",
+        "title": "Monitorar",
+        "category": "TDSMonitor",
+        "icon": {
+          "light": "resources/light/monitor.png",
+          "dark": "resources/dark/monitor.png"
+        }
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tds-plataform",
+          "title": "TDS",
+          "icon": "imagens/totvs24x24.png"
+        }
+      ]
+    },
+    "views": {
+      "tds-plataform": [
+        {
+          "id": "tds_monitor",
+          "name": "Monitor"
+        }
+      ]
+    },
+    "menus": {
+      "explorer/context": [],
+      "view/item/context": [
+        {
+          "command": "tds-monitor.connect",
+          "when": "view == totvs_server && viewItem == serverItem",
+          "group": "AAtotvsServer@1"
+        },
+        {
+          "command": "tds-monitor.disconnect",
+          "when": "view == totvs_server && viewItem == serverItem",
+          "group": "AAtotvsServer@2"
+        },
+        {
+          "command": "tds-monitor.add",
+          "when": "view == tds_monitor",
+          "group": "BtotvsMonitor@1"
+        },
+        {
+          "command": "tds-monitor.rename",
+          "when": "view == tds_monitor && viewItem == monitorItem",
+          "group": "BtotvsMonitor@2"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "tds-monitor.add",
+          "when": "view == tds_monitor",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "tds-monitor.disconnect",
+          "when": "1 == 0"
+        },
+        {
+          "command": "tds-monitor.connect",
+          "when": "1 == 0"
+        },
+        {
+          "command": "tds-monitor.rename",
+          "when": "1 == 0"
+        }
+      ]
+    }
+  }
 }
