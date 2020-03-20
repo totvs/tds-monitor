@@ -7,8 +7,8 @@ export function showWelcomePage(forcedShow: boolean = false) {
   let isShowWelcomePage = config.get('welcomePage');
 
   if (isShowWelcomePage || forcedShow) {
-    const page = new WelcomePageLoader();
-    console.log(page);
+    const loader = new WelcomePageLoader();
+    console.log(loader);
   }
 }
 

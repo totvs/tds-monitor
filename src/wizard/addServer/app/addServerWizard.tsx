@@ -15,7 +15,7 @@ export interface IConfigState {
 
 export let myVscode: any;
 
-export default class CreateServer extends React.Component<
+export default class AddServerWizard extends React.Component<
   IConfigProps,
   IConfigState
 > {

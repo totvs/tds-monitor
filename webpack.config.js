@@ -6,7 +6,8 @@ module.exports = {
   //O entry pode ser definido com um objeto. A chave, ou no nome da propriedade, nesse caso sera o nome de saida do arquivo.
   entry: {
     monitorView: "./src/monitor/app/index.tsx",
-    welcomePage: "./src/welcome/app/index.tsx"
+    welcomePage: "./src/welcome/app/index.tsx",
+    addServer: "./src/wizard/addServer/app/index.tsx"
   },
   output: {
     //Todos os arquivos tsx serão compilados e gerados seus equivalentes js na mesma pasta

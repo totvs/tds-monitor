@@ -2,8 +2,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import "./index.css";
-import CreateServer from "./createServer";
-import { CommandAction } from "../../command";
+import CreateServer from "./addServerWizard";
+import { WizardAction } from "../../action";
 
 declare global {
   interface Window {
@@ -23,7 +23,7 @@ ReactDOM.render(
 window.addEventListener("message", event => {
   const message = event.data; // The json data that the extension sent
   switch (message.command) {
-    case CommandAction.UpdateState:
+    case WizardAction.UpdateWizard:
       vscode.setState( { config: event.data });
       break;
   }

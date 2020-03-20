@@ -135,13 +135,6 @@ export function getLanguageClient(): Promise<MonitorLanguageClient> {
   languageClient.onDidChangeState((e: StateChangeEvent) => {
     languageClient._isRunning = e.newState === State.Running;
     languageClient._isStarting = e.newState === State.Starting;
-
-    if (languageClient._isStarting) {
-      console.log("*** LS Starting");
-    }
-    if (languageClient._isRunning) {
-      console.log("*** LS isRunning");
-    }
   });
 
   languageClient

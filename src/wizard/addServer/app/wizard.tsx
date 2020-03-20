@@ -1,12 +1,11 @@
-import React, { ChangeEvent } from "react";
+import * as React from "react";
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { myVscode } from "./createServer";
-import { ICommand, CommandAction } from "../../command";
+import { myVscode } from "./addServerWizard";
 import * as ini from "ini";
 
 import {
@@ -19,6 +18,7 @@ import {
   Checkbox
 } from "@material-ui/core";
 import { IMonitorItem } from "../../../monitorInterfaces";
+import { IWizardAction, WizardAction } from "../../action";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -83,7 +83,7 @@ export default function Wizard(newServer) {
     return null;
   };
 
-  const loadSmartClient = (event: ChangeEvent<HTMLInputElement>) => {
+  const loadSmartClient = (event: React.ChangeEvent<HTMLInputElement>) => {
     Array.from(event.target.files).forEach(file => {
       getFileFromInput(file as File)
         .then((content: string) => {
@@ -251,8 +251,8 @@ console.log(value);
   };
 
   if (activeStep === 2) {
-    let command: ICommand = {
-      action: CommandAction.ValidConnection,
+    let command: IWizardAction = {
+      action: WizardAction.Validate,
       content: stateForm
     };
     myVscode.postMessage(command);

@@ -4,7 +4,7 @@
 
 import vscode, { workspace, window, commands } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
-import { ServerCommands } from './serverCommands';
+import { ServerCommands } from './monitorCommands';
 import { getLanguageClient } from './ls/monitorClient';
 import { isConfigurationChanged } from './ls/languageServerSettings';
 import { showWelcomePage } from './welcome/welcomePageLoader';

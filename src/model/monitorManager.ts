@@ -7,6 +7,7 @@ import {
   IPermissionsInfo
 } from "./serversConfig";
 import { IMonitorItem } from "../monitorInterfaces";
+import { MonitorItem, TreeMonitorItem } from "./monitorItem";
 
 class ServerManager {
   /**
@@ -243,10 +244,12 @@ class ServerManager {
     this.refresh();
   }
 
-  createServerItem(): IMonitorItem {
-    const si = null; //new ServerItem();
+  createServerItem(): TreeMonitorItem {
+    const mi = new MonitorItem();
+    mi.name = "Novo " + this.getServers().length;
+
+    const si = new TreeMonitorItem(mi);
     si.id = this.generateRandomID();
-    si.name = "Novo " + this.getServers().length;
 
     return si;
   }

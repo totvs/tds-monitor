@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { ICommand, CommandAction } from "./command";
-import { IMonitorItem } from "../monitorInterfaces";
+import { IMonitorItem } from "../../monitorInterfaces";
+import { IWizardAction, WizardAction } from "../action";
 
-export class CreateServerLoader {
+export class AddServerLoader {
   protected readonly _panel: vscode.WebviewPanel | undefined;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
@@ -14,14 +14,14 @@ export class CreateServerLoader {
     let config = newServer;
     if (config) {
       this._panel = vscode.window.createWebviewPanel(
-        "createServerView",
-        "Create ServerView",
+        "addServerLoader",
+        "Assistente: Novo Servidor",
         vscode.ViewColumn.One,
         {
           enableScripts: true,
           localResourceRoots: [
             vscode.Uri.file(
-              path.join(extensionPath, "out", "createServerViewer")
+              path.join(extensionPath, "out", "webpack")
             )
           ]
         }
@@ -30,21 +30,21 @@ export class CreateServerLoader {
       this._panel.webview.html = this.getWebviewContent(config);
 
       this._panel.webview.onDidReceiveMessage(
-        (command: ICommand) => {
+        (command: IWizardAction) => {
           switch (command.action) {
-            case CommandAction._Save:
-              //this.saveFileContent(command.content);
-              break;
+            // case WizardAction.Save:
+            //   //this.saveFileContent(command.content);
+            //   break;
 
-            case CommandAction.ValidConnection:
-              this.doUpdateProperties(newServer, command.content);
-              this.doValidConnection(newServer);
-              break;
+            // case CommandAction.ValidConnection:
+            //   this.doUpdateProperties(newServer, command.content);
+            //   this.doValidConnection(newServer);
+            //   break;
 
-            case CommandAction.UpdateProperty:
-              this.doUpdateProperty(newServer, command.content);
+            // case CommandAction.UpdateProperty:
+            //   this.doUpdateProperty(newServer, command.content);
 
-              break;
+            //   break;
           }
           this.updatePanel(config);
         },
@@ -60,8 +60,8 @@ export class CreateServerLoader {
       path.join(
         this._extensionPath,
         "out",
-        "createServerViewer",
-        "createServerViewer.js"
+        "webpack",
+        "addServer.js"
       )
     );
     const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
@@ -93,30 +93,30 @@ export class CreateServerLoader {
     </html>`;
   }
 
-  private async doValidConnection(config: IMonitorItem) {
-    config.validConnection();
-  }
+  // private async doValidConnection(config: IMonitorItem) {
+  //   config.validConnection();
+  // }
 
-  private doUpdateProperties(config: IMonitorItem, content: any) {
-    for (const key in content) {
-      if (config.hasOwnProperty(key)) {
-        this.doUpdateProperty(config, { name: key, content: content[key]});
-      }
-    }
-  }
+  // private doUpdateProperties(config: IMonitorItem, content: any) {
+  //   for (const key in content) {
+  //     if (config.hasOwnProperty(key)) {
+  //       this.doUpdateProperty(config, { name: key, content: content[key]});
+  //     }
+  //   }
+  // }
 
-  private doUpdateProperty(config: any, content: any) {
-    if (config.hasOwnProperty(content.name)) {
-      config[content.name] = content.value;
-    } else {
-      console.warn(`doUpdateProperty: not found property ${content.name}`);
-    }
-  }
+  // private doUpdateProperty(config: any, content: any) {
+  //   if (config.hasOwnProperty(content.name)) {
+  //     config[content.name] = content.value;
+  //   } else {
+  //     console.warn(`doUpdateProperty: not found property ${content.name}`);
+  //   }
+  // }
 
   private updatePanel(config: any) {
     this._panel?.webview.postMessage({
       error: config.buildVersion === "" ? "Erro de validação." : "",
-      command: CommandAction.UpdateState,
+      command: WizardAction.UpdateWizard,
       data: config
     });
   }

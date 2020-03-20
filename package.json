@@ -46,27 +46,27 @@
     "publish": "vsce publish"
   },
   "dependencies": {
-    "@material-ui/core": "^4.9.5",
+    "@material-ui/core": "^4.9.7",
     "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.45",
+    "@material-ui/lab": "^4.0.0-alpha.46",
     "@totvs/tds-da": "^1.1.3",
     "@totvs/tds-ls": "^1.1.4",
     "@types/jszip": "^3.1.7",
-    "@types/node": "^13.9.1",
+    "@types/node": "^13.9.2",
     "@types/react": "^16.9.23",
     "@types/vscode": "^1.43.0",
     "core-js": "^3.6.4",
     "ini": "^1.3.5",
     "jszip": "^3.2.2",
     "material-table": "^1.57.2",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "strip-json-comments": "^3.0.1",
     "template-literal": "^1.0.3",
     "tmp": "^0.1.0",
     "typescript": "3.8.3",
     "vscode-debugadapter": "^1.39.1",
-    "vscode-languageclient": "^6.1.1",
+    "vscode-languageclient": "^6.1.3",
     "vscode-nls": "^4.1.2",
     "zlib": "^1.0.5"
   },
@@ -115,7 +115,7 @@
           "scope": "window",
           "type": "boolean",
           "default": true,
-		  "description": "Apresentar a página de boas vindas do TDS Monitor ao iniciar."
+          "description": "Apresentar a página de boas vindas do TDS Monitor ao iniciar."
         }
       }
     },
@@ -136,13 +136,22 @@
         "category": "TDSMonitor"
       },
       {
+        "command": "tds-monitor.create",
+        "title": "Inicializa  a definição de um servidor.",
+        "icon": {
+          "light": "resources/light/add.png",
+          "dark": "resources/dark/add.png"
+        },
+        "category": "TDSMonitor"
+      },
+      {
         "command": "tds-monitor.add",
         "title": "%tds.package.add%",
         "icon": {
           "light": "resources/light/add.png",
           "dark": "resources/dark/add.png"
         },
-        "category": "TOTVS"
+        "category": "TDSMonitor"
       },
       {
         "command": "tds-monitor.rename",
@@ -195,7 +204,7 @@
           "group": "AAtotvsServer@2"
         },
         {
-          "command": "tds-monitor.add",
+          "command": "tds-monitor.create",
           "when": "view == tds_monitor",
           "group": "BtotvsMonitor@1"
         },
@@ -207,22 +216,14 @@
       ],
       "view/title": [
         {
-          "command": "tds-monitor.add",
+          "command": "tds-monitor.create",
           "when": "view == tds_monitor",
           "group": "navigation"
         }
       ],
       "commandPalette": [
         {
-          "command": "tds-monitor.disconnect",
-          "when": "1 == 0"
-        },
-        {
-          "command": "tds-monitor.connect",
-          "when": "1 == 0"
-        },
-        {
-          "command": "tds-monitor.rename",
+          "command": "tds-monitor.add",
           "when": "1 == 0"
         }
       ]

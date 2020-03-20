@@ -4,7 +4,7 @@ import * as path from 'path';
 import { MultiStepInput } from "./multiStepInput";
 
 import * as nls from 'vscode-nls';
-import { MonitorItem, EnvSection } from './model/monitorItem';
+import { TreeMonitorItem, EnvSection } from "./model/monitorItem";
 let localize = nls.loadMessageBundle();
 
 /**
@@ -51,7 +51,7 @@ export async function inputConnectionParameters(context: ExtensionContext, serve
 	async function collectConnectInputs() {
 		const state = {} as Partial<State>;
 
-		if (serverParam instanceof MonitorItem) {
+		if (serverParam instanceof TreeMonitorItem) {
 			state.server = serverParam.id;
 			CONNECT_TOTAL_STEPS -= 1;
 			CONNECT_SERVER_STEP -= 1;

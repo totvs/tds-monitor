@@ -1,14 +1,14 @@
 import { serverManager } from './monitorManager';
 import * as vscode from 'vscode';
-import { MonitorItem } from './monitorItem';
 import { IMonitorItem } from '../monitorInterfaces';
+import { TreeMonitorItem } from './monitorItem';
 
-export class MonitorItemProvider implements vscode.TreeDataProvider<MonitorItem> {
+export class MonitorItemProvider implements vscode.TreeDataProvider<TreeMonitorItem> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<MonitorItem | undefined> = new vscode.EventEmitter<MonitorItem | undefined>();
-	readonly onDidChangeTreeData: vscode.Event<MonitorItem | undefined> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<TreeMonitorItem | undefined> = new vscode.EventEmitter<TreeMonitorItem | undefined>();
+	readonly onDidChangeTreeData: vscode.Event<TreeMonitorItem | undefined> = this._onDidChangeTreeData.event;
 
-	public localMonitorItems: Array<MonitorItem> = [];
+	public localMonitorItems: Array<TreeMonitorItem> = [];
 
 	constructor() {
 		this.loadAndConfigMonitor();
@@ -18,12 +18,12 @@ export class MonitorItemProvider implements vscode.TreeDataProvider<MonitorItem>
 		this._onDidChangeTreeData.fire();
 	}
 
-	getTreeItem(element: MonitorItem): vscode.TreeItem {
+	getTreeItem(element: TreeMonitorItem): vscode.TreeItem {
 
 		return element;
 	}
 
-	getChildren(element?: MonitorItem): Thenable<MonitorItem[]> {
+	getChildren(element?: TreeMonitorItem): Thenable<TreeMonitorItem[]> {
 		if (element) {
 			if (element.listSessions) {
 				return Promise.resolve(element.listSessions);
@@ -52,9 +52,9 @@ export class MonitorItemProvider implements vscode.TreeDataProvider<MonitorItem>
 	}
 
 	private loadMonitorItems() {
-		this.localMonitorItems = new Array<MonitorItem>();
+		this.localMonitorItems = new Array<TreeMonitorItem>();
 		serverManager.getServers().forEach((element: IMonitorItem) => {
-			this.localMonitorItems.push(new MonitorItem(element));
+			this.localMonitorItems.push(new TreeMonitorItem(element));
 		});
 	}
 }

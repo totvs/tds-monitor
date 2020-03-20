@@ -1,7 +1,33 @@
 import * as vscode from 'vscode';
 import { IMonitorItem } from '../monitorInterfaces';
 
-export class MonitorItem extends vscode.TreeItem {
+export class MonitorItem implements IMonitorItem {
+	id: string;
+	type: string;
+	name: string;
+	port: number;
+	address: string;
+	buildVersion: string;
+	secure: boolean;
+	includes: string[];
+	environments: string[];
+	smartClient?: string;
+	token: string;
+	environment: string;
+
+	connect(): Promise<boolean> {
+		throw new Error("Method not implemented.");
+	}
+	reconnect(): Promise<boolean> {
+		throw new Error("Method not implemented.");
+	}
+	validConnection(): Promise<boolean> {
+		throw new Error("Method not implemented.");
+	}
+
+}
+
+export class TreeMonitorItem extends vscode.TreeItem {
 
 	public isConnected: boolean = false;
 	public token: string = "";
@@ -17,7 +43,7 @@ export class MonitorItem extends vscode.TreeItem {
 	}
 
 	get tooltip(): string {
-		return `${this.serverItem.address}:${this.serverItem.port} (${this.serverItem.type}${this.serverItem.secure?",SSL":""})`;
+		return `${this.serverItem.address}:${this.serverItem.port} (${this.serverItem.type}${this.serverItem.secure ? ",SSL" : ""})`;
 	}
 
 	get description(): string {
@@ -34,5 +60,4 @@ export class MonitorItem extends vscode.TreeItem {
 export class EnvSection {
 	serverItemParent: any;
 	label: string | vscode.QuickPickItem;
-
 }

@@ -1,4 +1,4 @@
-import { CreateServerLoader } from './dialogs/createServerLoader';
+import { AddServerLoader } from './wizard/addServer/addServerLoader';
 import { serverManager } from './model/monitorManager';
 import { MonitorItem } from './model/monitorItem';
 import * as vscode from 'vscode';
@@ -22,8 +22,8 @@ export class ServerCommands {
 
     private static createMonitor(context: vscode.ExtensionContext) {
         const server = serverManager.createServerItem();
-        const vl: CreateServerLoader = new CreateServerLoader(server, context.extensionPath);
-        console.log(vl);
+        const loader = new AddServerLoader(server.serverItem, context.extensionPath);
+        console.log(loader);
     }
 
     private static addMonitor(context: vscode.ExtensionContext, serverItem: IMonitorItem) {
@@ -31,7 +31,7 @@ export class ServerCommands {
     }
 
     private static deleteMonitor(context: vscode.ExtensionContext, monitorItem: MonitorItem) {
-        serverManager.delete(monitorItem.serverItem);
+        serverManager.delete(monitorItem);
     }
 
     private static openConfiguration(context: vscode.ExtensionContext) {
