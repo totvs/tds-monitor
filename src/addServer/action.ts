@@ -6,5 +6,6 @@ export interface IAddServerAction {
 export enum AddServerAction {
   Save,
   UpdateWizard,
-  Validate
+  Validate,
+  UpdateModel
 }

@@ -2,18 +2,18 @@ import * as vscode from 'vscode';
 import { IMonitorItem } from '../monitorInterfaces';
 
 export class MonitorItem implements IMonitorItem {
-	id: string;
-	type: string;
-	name: string;
-	port: number;
-	address: string;
-	buildVersion: string;
-	secure: boolean;
-	includes: string[];
-	environments: string[];
-	smartClient?: string;
-	token: string;
-	environment: string;
+	id: string = "";
+	type: string = "protheus";
+	name: string = "";
+	port: number = 0;
+	address: string = "";
+	buildVersion: string = "";
+	secure: boolean = false;
+	includes: string[] = [];
+	environments: string[] = [];
+	smartClient?: string = "";
+	token: string = "";
+	environment: string = "";
 
 	connect(): Promise<boolean> {
 		throw new Error("Method not implemented.");

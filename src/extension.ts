@@ -17,8 +17,6 @@ export async function activate(context: vscode.ExtensionContext) {
   ServerCommands.register(context);
   //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.showWelcomePage', () => { showWelcomePage(true); }));
 
-  console.log('Congratulations, your extension "tds-monitor" is now active!');
-
   languageClient = await getLanguageClient();
   context.subscriptions.push((languageClient).start());
 

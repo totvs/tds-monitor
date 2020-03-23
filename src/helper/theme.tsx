@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 //import { useMediaQuery } from "@material-ui/core";
-import { indigo, lightBlue, red } from "@material-ui/core/colors";
+import { indigo, lightBlue } from "@material-ui/core/colors";
 
 //https://material-ui.com/pt/customization/default-theme/?expand-path=$.palette
 
@@ -12,6 +12,33 @@ let darkTheme = createMuiTheme({
     MuiGrid: {
 
     },
+    MuiStepper: {
+      root: {
+        backgroundColor: indigo[100],
+        left: 0,
+        right: 0,
+      }
+    },
+    MuiBottomNavigation: {
+      root: {
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: indigo[100],
+      }
+    },
+    MuiFormControl: {
+      root: {
+
+      }
+    },
+    MuiTextField: {
+      root: {
+margin: "3em"
+      },
+
+    }
   },
   palette: {
     //  type: "dark",
@@ -20,9 +47,13 @@ let darkTheme = createMuiTheme({
   },
   typography: {
     subtitle1: {
-      color: red[500]
+      color: indigo[700]
     }
-  }
+  },props: {
+    MuiTextField: {
+      variant: 'outlined'
+    },
+  },
 });
 
 let lightTheme = createMuiTheme({

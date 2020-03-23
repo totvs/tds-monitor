@@ -60,29 +60,7 @@ export default function Wizard(newServer) {
     return null;
   };
 
-  const loadSmartClient = (event: React.ChangeEvent<HTMLInputElement>) => {
-    Array.from(event.target.files).forEach(file => {
-      getFileFromInput(file as File)
-        .then((content: string) => {
-          const parseIni = ini.parse(content);
-          const drivers = getIniProp(parseIni, "drivers");
-          const active = getIniProp(drivers, "active");
-          const config = getIniProp(parseIni, active);
-          const address = getIniProp(config, "server");
-          const port = getIniProp(config, "port");
-
-          setStateForm({
-            ...stateForm,
-            address: address,
-            port: parseInt(port)
-          });
-          //setServer({ ...server, address: address, port: parseInt(port) });
-        })
-        .catch(function(reason) {
-          console.log(`Error during upload ${reason}`);
-        });
-    });
-  };
+ 
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
@@ -101,94 +79,7 @@ console.log(value);
     // setServer({ ...server, [name]: value });
   };
 
-  const selectServerType = () => {
-    return (
-      <div>
-        <FormLabel component="legend">
-          Selecione o tipo da aplicação servidora
-        </FormLabel>
-        <RadioGroup name="type" value={stateForm.type} onChange={handleChange}>
-          <FormControlLabel
-            value="protheus"
-            control={<Radio />}
-            label="Protheus"
-          />
-          <FormControlLabel value="logix" control={<Radio />} label="Logix" />
-          <FormControlLabel
-            value="dbaccess"
-            control={<Radio />}
-            label="DBAccess"
-          />
-        </RadioGroup>
-      </div>
-    );
-  };
 
-  const getConnectionInfo = (readOnly: boolean) => {
-    return (
-      <div>
-        <TextField
-          name='type'
-          label="Tipo"
-          value={stateForm.type}
-          disabled
-        />
-        <TextField
-          name='smartClient'
-          label="SmartClient"
-          value={stateForm.smartClient}
-          helperText="Arquivo de configuração SmartClient."
-          type="file"
-          size="small"
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={loadSmartClient}
-        />
-        <TextField
-        name='name'
-          label="Nome"
-          required
-          value={stateForm.name}
-          helperText="Informe o nome para identificação do registro."
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={handleChange}
-        />
-        <TextField
-        name='address'
-          label="Endereço"
-          required
-          value={stateForm.address}
-          helperText="Informe o nome ou endereço IP da aplicação servidora."
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={handleChange}
-        />
-        <TextField
-        name='port'
-          label="Porta"
-          required
-          type="number"
-          value={stateForm.port}
-          helperText="Informe a porta de conexão. Normalmente é a mesma do SmartClient."
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={handleChange}
-        />
-        <FormControlLabel
-        name='secure'
-          disabled
-          control={<Checkbox checked={stateForm.secure} value="ssl" />}
-          label="Conexão segura (SSL)"
-          onChange={handleChange}
-        />
-      </div>
-    );
-  };
 
   const testConnection = () => {
     return (

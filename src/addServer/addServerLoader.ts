@@ -7,9 +7,11 @@ export class AddServerLoader {
   protected readonly _panel: vscode.WebviewPanel | undefined;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
+  private _server: IMonitorItem;
 
   constructor(newServer: IMonitorItem, extensionPath: string) {
     this._extensionPath = extensionPath;
+    this._server = newServer;
 
     if (newServer) {
       this._panel = vscode.window.createWebviewPanel(
@@ -31,6 +33,10 @@ export class AddServerLoader {
       this._panel.webview.onDidReceiveMessage(
         (command: IAddServerAction) => {
           switch (command.action) {
+             case AddServerAction.UpdateModel:
+              this.doUpdateProperties( command.content);
+             break;
+
             // case WizardAction.Save:
             //   //this.saveFileContent(command.content);
             //   break;
@@ -45,7 +51,7 @@ export class AddServerLoader {
 
             //   break;
           }
-          this.updatePanel(newServer);
+          this.updatePanel();
         },
         undefined,
         this._disposables
@@ -96,27 +102,21 @@ export class AddServerLoader {
   //   config.validConnection();
   // }
 
-  // private doUpdateProperties(config: IMonitorItem, content: any) {
-  //   for (const key in content) {
-  //     if (config.hasOwnProperty(key)) {
-  //       this.doUpdateProperty(config, { name: key, content: content[key]});
-  //     }
-  //   }
-  // }
+   private doUpdateProperties(content: any) {
+     for (const key in content) {
+       if (this._server.hasOwnProperty(key)) {
+        this._server[key] = content[key];
+     } else {
+       console.warn(`doUpdateProperty: not found property ${content.name}`);
+     }
+   }
+  }
 
-  // private doUpdateProperty(config: any, content: any) {
-  //   if (config.hasOwnProperty(content.name)) {
-  //     config[content.name] = content.value;
-  //   } else {
-  //     console.warn(`doUpdateProperty: not found property ${content.name}`);
-  //   }
-  // }
-
-  private updatePanel(config: any) {
+  private updatePanel() {
     this._panel?.webview.postMessage({
-      error: config.buildVersion === "" ? "Erro de validação." : "",
+      error: this._server.buildVersion === "" ? "Erro de validação." : "",
       command: AddServerAction.UpdateWizard,
-      data: config
+      data: this._server
     });
   }
 }
