@@ -56,8 +56,6 @@
     "@types/react": "^16.9.23",
     "@types/vscode": "^1.43.0",
     "core-js": "^3.6.4",
-    "formik": "^2.1.4",
-    "formik-material-ui": "^2.0.0-beta.1",
     "ini": "^1.3.5",
     "jszip": "^3.2.2",
     "material-table": "^1.57.2",

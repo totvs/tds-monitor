@@ -154,14 +154,12 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
           onChange={handleChange}
         />
         <TextField
+          type="uri"
           name="address"
           label="Endereço"
           required
           value={state.address}
-          helperText="Informe o nome ou endereço IP da aplicação servidora."
-          InputProps={{
-            readOnly: readOnly
-          }}
+          helperText="Informe o nome ou endereço IP e porta de conexão."
           onChange={handleChange}
         />
         <TextField
