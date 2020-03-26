@@ -1,4 +1,23 @@
+export enum Severity {
+  OK,
+  INFO,
+  WARN,
+  ERROR
+}
+
+export interface IError {
+  severity: Severity;
+  id: string;
+  message: string;
+}
+
+export function createError(severity: Severity, id: string, message: string): IError {
+  return { severity: severity, id: id, message: message };
+}
+
+
 export interface IMonitorItem {
+  parent: string;
   id: string;
   type: string;
   name: string;
@@ -11,10 +30,11 @@ export interface IMonitorItem {
   smartClient?: string;
   token: string;
   environment: string;
+  errors: IError[];
 
-  connect(): Promise<boolean>;
-  reconnect(): Promise<boolean>;
+  doUpdateProperties(content: any): boolean;
   validConnection(): Promise<boolean>;
+  validate(): Promise<void>;
 }
 
 export interface IValidationServer {

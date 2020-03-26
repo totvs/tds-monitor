@@ -3,19 +3,22 @@ import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 //import { useMediaQuery } from "@material-ui/core";
 import { indigo, lightBlue, red } from "@material-ui/core/colors";
 
-//https://material-ui.com/pt/customization/default-theme/?expand-path=$.palette
+//TODO: Ocorre erro de loader
+//import 'typeface-roboto';
+
+//https://material-ui.com/pt/customization/default-theme/
 
 let darkTheme = createMuiTheme({
   overrides: {
     MuiDivider: {},
     MuiPaper: {},
     MuiGrid: {},
-    MuiStepper: {
+    MuiToolbar: {
       root: {
         backgroundColor: indigo[100],
         left: 0,
         right: 0,
-        marginBottom: '2em'
+        marginBottom: "2em"
       }
     },
     MuiBottomNavigation: {
@@ -29,20 +32,19 @@ let darkTheme = createMuiTheme({
     },
     MuiFormControl: {
       root: {
-        marginLeft: "2em",
-
+        marginLeft: "2em"
       }
     },
     MuiInputBase: {
-      formControl: {
-      },
+      formControl: {}
     },
     MuiTextField: {
       root: {
         require: {
           color: red[100]
         },
-
+        margin: "dense",
+        size: "small"
       }
     }
   },
@@ -58,7 +60,8 @@ let darkTheme = createMuiTheme({
   },
   props: {
     MuiInputBase: {},
-    MuiTextField: { variant: "outlined" }
+    MuiTextField: { variant: "standard" },
+    MuiToolbar: { variant: "dense" }
   }
 });
 

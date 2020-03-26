@@ -200,13 +200,13 @@ class ServerManager {
 
   getFilename(): string {
     const uri = vscode.Uri.parse("file:///.");
-	const folder = vscode.workspace.getWorkspaceFolder(uri);
+    const folder = vscode.workspace.getWorkspaceFolder(uri);
 
     if (folder) {
-	  const configFile = path.join(folder.uri.fsPath, "servers.json");
-	  if (fs.existsSync(configFile)) {
-		  return configFile;
-	  }
+      const configFile = path.join(folder.uri.fsPath, "servers.json");
+      if (fs.existsSync(configFile)) {
+        return configFile;
+      }
     }
 
     const homedir = require("os").homedir();

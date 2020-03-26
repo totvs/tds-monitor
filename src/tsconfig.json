@@ -11,12 +11,13 @@
         "jsx": "react",
         "sourceMap": true,
         "mapRoot": "../out",
-        "alwaysStrict": true,
+        "alwaysStrict": false,
         "noUnusedLocals": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "strictNullChecks": false,
     },
     "exclude": [
         "node_modules",

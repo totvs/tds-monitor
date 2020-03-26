@@ -108,7 +108,7 @@ export function getLanguageClient(): Promise<MonitorLanguageClient> {
     // 	fileEvents: workspace.createFileSystemWatcher('**/.cc')
     // },
     //diagnosticCollectionName: "AdvPL",
-    outputChannelName: "TDS Monitor",
+    outputChannelName: "AdvPL (Monitor)",
     revealOutputChannelOn: RevealOutputChannelOn.Info,
     initializationOptions: clientConfig,
     //middleware: { provideCodeLenses: provideCodeLens }

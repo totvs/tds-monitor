@@ -16,7 +16,7 @@ import {
   StopIcon,
   WriteLogIcon,
   DisconnectIcon
-} from "./monitorIcons";
+} from "../../helper/monitorIcons";
 import { MonitorViewAction, IMonitorViewAction } from "../actions";
 import IMonitorUser from "../monitorUser";
 import SendMessageDialog from "./sendMessageDialog";

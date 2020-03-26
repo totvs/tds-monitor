@@ -5,7 +5,8 @@ export interface IAddServerAction {
 
 export enum AddServerAction {
   Save,
-  UpdateWizard,
+  UpdateWeb,
   Validate,
-  UpdateModel
+  UpdateModel,
+  NavButton
 }

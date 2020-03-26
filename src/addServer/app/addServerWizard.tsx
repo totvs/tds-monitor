@@ -1,29 +1,22 @@
 import * as React from "react";
 
-import { IMonitorItem } from "../../monitorInterfaces";
+import { IMonitorItem, Severity } from "../../monitorInterfaces";
 import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
-import NavigateBeforeIcon from "@material-ui/icons/NavigateBefore";
-import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 import CancelIcon from "@material-ui/icons/Cancel";
 import DoneIcon from "@material-ui/icons/Done";
 
 import {
   Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  Button,
   BottomNavigation,
   BottomNavigationAction,
-  FormLabel,
-  RadioGroup,
   FormControlLabel,
-  Radio,
   TextField,
   Checkbox,
-  FormControl,
-  FormHelperText
+  Toolbar,
+  IconButton,
+  MenuItem,
+  SvgIcon
 } from "@material-ui/core";
 import { IAddServerAction, AddServerAction } from "../action";
 
@@ -32,24 +25,57 @@ interface IAddServerWizardProps {
   monitorItem: IMonitorItem;
 }
 
-const steps = [
-  "Tipo da Aplicação",
-  "Informações para Acesso",
-  "Verificação e Confirmação"
-];
+//TODO: Empacotar ícones de forma semelhante ao material-ui
+function ServerIcon(props: any) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z" />
+    </SvgIcon>
+  );
+}
+
+let listener: EventListenerOrEventListenerObject | undefined = undefined;
 
 export default function AddServerWizard(props: IAddServerWizardProps) {
-  const [activeStep, setActiveStep] = React.useState(0);
+  const [activeStep, setActiveStep] = React.useState(1);
   const [state, setState] = React.useState<IMonitorItem>(props.monitorItem);
+  const [isReadOnly] = React.useState<boolean>(false);
+  const ref = React.useRef();
 
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+  if (listener === undefined) {
+    listener = (event: MessageEvent) => {
+      const message = event.data; // The JSON data our extension sent
+
+      switch (message.command) {
+        case AddServerAction.UpdateWeb: {
+          const data = { ...state, ...message.data };
+          setState(data);
+          break;
+        }
+        default:
+          console.log("***** ATENÇÃO: addServerWizard.tsx");
+          console.log("\tComando não reconhecido: " + message.command);
+          break;
+      }
+    };
+
+    window.addEventListener("message", listener);
+  }
 
   const updateModel = (data: any) => {
     let command: IAddServerAction = {
       action: AddServerAction.UpdateModel,
       content: data
+    };
+
+    props.vscode.postMessage(command);
+  };
+
+  const handleNavButton = (event: React.ChangeEvent<{}>, value: number) => {
+    let command: IAddServerAction = {
+      action: AddServerAction.NavButton,
+      content: value
     };
 
     props.vscode.postMessage(command);
@@ -61,9 +87,11 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
     const value =
       target.type === "checkbox"
         ? target.checked
-        : //  : target.type === "number"
-          //  ? parseInt(target.value)
-          target.value;
+        : target.type === "file" && event.target.files.length > 0
+        ? event.target.files[0].name
+        : target.type === "number"
+        ? parseInt(target.value)
+        : target.value;
     const oldValue = state[name];
 
     if (value !== oldValue) {
@@ -74,191 +102,173 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
     }
   };
 
-  const loadSmartClient = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Array.from(event.target.files).forEach(file => {
-    //   getFileFromInput(file as File)
-    //     .then((content: string) => {
-    //       const parseIni = ini.parse(content);
-    //       const drivers = getIniProp(parseIni, "drivers");
-    //       const active = getIniProp(drivers, "active");
-    //       const config = getIniProp(parseIni, active);
-    //       const address = getIniProp(config, "server");
-    //       const port = getIniProp(config, "port");
-    //       setStateForm({
-    //         ...stateForm,
-    //         address: address,
-    //         port: parseInt(port)
-    //       });
-    //       //setServer({ ...server, address: address, port: parseInt(port) });
-    //     })
-    //     .catch(function(reason) {
-    //       console.log(`Error during upload ${reason}`);
-    //     });
-    // });
-  };
+  const getError = (noErrorMessage: string = ""): string => {
+    let error = undefined;
 
-  const selectServerType = () => {
-    return (
-      <React.Fragment>
-        <FormControl component="fieldset" required>
-          <FormLabel component="legend">Aplicação Servidora</FormLabel>
-          <RadioGroup
-            aria-label="type"
-            name="type"
-            value={state.type}
-            onChange={handleChange}
-          >
-            <FormControlLabel
-              value="protheus"
-              control={<Radio />}
-              label="Protheus"
-            />
-            <FormControlLabel
-              value="loginc"
-              control={<Radio />}
-              label="Logix"
-            />
-            <FormHelperText>
-              Selecione qual o tipo de aplicação servidora ao qual deseja
-            </FormHelperText>
-          </RadioGroup>
-        </FormControl>
-      </React.Fragment>
-    );
-  };
+    if (ref.current !== undefined) {
+      console.log(ref);
+      console.log(ref.current);
 
-  const getConnectionInfo = (readOnly: boolean) => {
-    return (
-      <React.Fragment>
-        <TextField name="type" label="Tipo" value={state.type} disabled />
-        <TextField
-          name="smartClient"
-          label="SmartClient"
-          value={state.smartClient}
-          helperText="Arquivo de configuração SmartClient."
-          type="file"
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={loadSmartClient}
-        />
-        <TextField
-          name="name"
-          label="Nome"
-          required
-          value={state.name}
-          helperText="Informe o nome para identificação do registro."
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={handleChange}
-        />
-        <TextField
-          type="uri"
-          name="address"
-          label="Endereço"
-          required
-          value={state.address}
-          helperText="Informe o nome ou endereço IP e porta de conexão."
-          onChange={handleChange}
-        />
-        <TextField
-          name="port"
-          label="Porta"
-          required
-          type="number"
-          value={state.port}
-          helperText="Informe a porta de conexão. Normalmente é a mesma do SmartClient."
-          InputProps={{
-            readOnly: readOnly
-          }}
-          onChange={handleChange}
-        />
-        <FormControlLabel
-          name="secure"
-          disabled
-          control={<Checkbox checked={state.secure} value="ssl" />}
-          label="Conexão segura (SSL)"
-          onChange={handleChange}
-        />
-      </React.Fragment>
-    );
-  };
+      const targetId = ref!.current!.id;
+      error = state.errors.find(err => {
+        if ((error.id === targetId) && (err.severity === Severity.ERROR)) {
+          return error;
+        }
 
-  const getStepContent = (step: number) => {
-    switch (step) {
-      case 0:
-        return selectServerType();
-
-      case 1:
-        return getConnectionInfo(false);
-
-      default:
-        break;
+      });
     }
 
-    return <Typography>{step}</Typography>;
+    return error ? error.message : noErrorMessage;
   };
+
+  const isError = (): boolean => {
+    return getError() !== undefined;
+  };
+
+  const serverTypes = [
+    { label: "Protheus", value: "protheus" },
+    { label: "Logix", value: "logix" }
+  ];
+
+  const folders = [{ label: "<servidores>", value: "/" }];
 
   return (
     <React.Fragment>
       <ErrorBoundary>
         <MonitorTheme>
-          <Stepper activeStep={activeStep}>
-            {steps.map((label, index) => {
-              const stepProps: { completed?: boolean } = {};
-              const labelProps: { optional?: React.ReactNode } = {};
-              return (
-                <Step key={label} {...stepProps}>
-                  <StepLabel {...labelProps}>{label}</StepLabel>
-                </Step>
-              );
-            })}
-          </Stepper>
-          {activeStep === steps.length ? (
-            <div>
-              <Typography>
-                All steps completed - you&apos;re finished
-              </Typography>
-              <Button onClick={handleReset}>Reset</Button>
-            </div>
-          ) : (
-            <React.Fragment>
-              {getStepContent(activeStep)}
-              <BottomNavigation
-                value={activeStep}
-                showLabels
-                onChange={(event, newValue) => {
-                  if (newValue !== 0) {
-                    setActiveStep(prevActiveStep => prevActiveStep + newValue);
-                  }
-                }}
-              >
-                <BottomNavigationAction
-                  label="Back"
-                  disabled={activeStep === 0}
-                  value={-1}
-                  icon={<NavigateBeforeIcon />}
-                />
-                <BottomNavigationAction
-                  label={activeStep === steps.length - 1 ? "Finish" : "Next"}
-                  value={1}
-                  icon={
-                    activeStep === steps.length - 1 ? (
-                      <DoneIcon />
-                    ) : (
-                      <NavigateNextIcon />
-                    )
-                  }
-                />
-                <BottomNavigationAction
-                  label="Cancel"
-                  value={0}
-                  icon={<CancelIcon />}
-                />
-              </BottomNavigation>
-            </React.Fragment>
-          )}
+          <Toolbar>
+            <IconButton edge="start" color="inherit" aria-label="menu" disabled>
+              <ServerIcon />
+            </IconButton>
+            <Typography variant="caption">Servidor: Novo</Typography>
+            &nbsp;&nbsp;
+            <Typography variant="subtitle1">
+              Informe parâmetros de conexão e confirme.
+            </Typography>
+          </Toolbar>
+          <React.Fragment>
+            <TextField
+              name="parent"
+              select
+              label="Destino"
+              value={state.parent}
+              onChange={handleChange}
+              helperText={getError(
+                "Selecione a pasta para melhorar a organização."
+              )}
+              disabled
+            >
+              {folders.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              name="type"
+              select
+              label="Tipo"
+              value={state.type}
+              onChange={handleChange}
+              helperText="Selecione o tipo de aplicação servidora."
+            >
+              {serverTypes.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              ref={ref}
+              error={isError()}
+              name="smartClient"
+              label="SmartClient"
+              value={state.smartClient}
+              helperText={getError("Executável SmartClient.")}
+              inputProps={{
+                readOnly: isReadOnly
+              }}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              error={isError()}
+              name="name"
+              label="Nome"
+              required
+              value={state.name}
+              helperText={getError(
+                "Informe o nome para identificação do registro."
+              )}
+              InputProps={{
+                readOnly: isReadOnly
+              }}
+              onChange={handleChange}
+            />
+            <TextField
+              error={isError()}
+              type="uri"
+              name="address"
+              label="Endereço"
+              required
+              value={state.address}
+              helperText={getError(
+                "Informe o nome ou endereço IP e porta de conexão."
+              )}
+              onChange={handleChange}
+            />
+            <TextField
+              error={isError()}
+              name="port"
+              label="Porta"
+              required
+              type="number"
+              value={state.port}
+              helperText={getError(
+                "Informe a porta de conexão. Normalmente é a mesma do SmartClient."
+              )}
+              InputProps={{
+                readOnly: isReadOnly
+              }}
+              onChange={handleChange}
+            />
+            <TextField
+              error={isError()}
+              name="version"
+              label="Versão"
+              value={state.buildVersion}
+              helperText={getError("Versão do servidor.")}
+              disabled
+            />
+            <FormControlLabel
+              name="secure"
+              control={<Checkbox checked={state.secure} value="ssl" />}
+              label="Conexão segura (SSL)"
+              onChange={handleChange}
+            />
+            <BottomNavigation
+              value={activeStep}
+              showLabels
+              onChange={(event, newValue) => {
+                handleNavButton(event, newValue);
+                setActiveStep(newValue);
+              }}
+            >
+              <BottomNavigationAction
+                label={"Finish"}
+                value={0}
+                disabled={state.errors.length !== 0}
+                icon={<DoneIcon />}
+              />
+              <BottomNavigationAction
+                label="Cancel"
+                value={1}
+                icon={<CancelIcon />}
+              />
+            </BottomNavigation>
+          </React.Fragment>
         </MonitorTheme>
       </ErrorBoundary>
     </React.Fragment>

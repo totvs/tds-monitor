@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+
 import { IMonitorItem } from "../monitorInterfaces";
 import { IAddServerAction, AddServerAction } from "./action";
 
@@ -8,6 +9,7 @@ export class AddServerLoader {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
   private _server: IMonitorItem;
+  private _needUpdate: boolean = false;
 
   constructor(newServer: IMonitorItem, extensionPath: string) {
     this._extensionPath = extensionPath;
@@ -33,9 +35,9 @@ export class AddServerLoader {
       this._panel.webview.onDidReceiveMessage(
         (command: IAddServerAction) => {
           switch (command.action) {
-             case AddServerAction.UpdateModel:
-              this.doUpdateProperties( command.content);
-             break;
+            case AddServerAction.UpdateModel:
+              this._needUpdate = this._server.doUpdateProperties(command.content);
+              break;
 
             // case WizardAction.Save:
             //   //this.saveFileContent(command.content);
@@ -51,7 +53,17 @@ export class AddServerLoader {
 
             //   break;
           }
+
           this.updatePanel();
+          this._server.validate().then(
+            () => {
+              this._needUpdate = true;
+            }, (reason: any) => {
+              vscode.window.showErrorMessage(reason);
+              this._needUpdate = true;
+            }).finally(() => {
+              this.updatePanel();
+            });
         },
         undefined,
         this._disposables
@@ -84,7 +96,6 @@ export class AddServerLoader {
                              img-src https:;
                              script-src 'unsafe-eval' 'unsafe-inline' vscode-resource:;
                              style-src vscode-resource: 'unsafe-inline';">
-
         <script>
           window.acquireVsCodeApi = acquireVsCodeApi;
           window.initialData = ${configJson};
@@ -98,25 +109,14 @@ export class AddServerLoader {
     </html>`;
   }
 
-  // private async doValidConnection(config: IMonitorItem) {
-  //   config.validConnection();
-  // }
-
-   private doUpdateProperties(content: any) {
-     for (const key in content) {
-       if (this._server.hasOwnProperty(key)) {
-        this._server[key] = content[key];
-     } else {
-       console.warn(`doUpdateProperty: not found property ${content.name}`);
-     }
-   }
-  }
-
   private updatePanel() {
-    this._panel?.webview.postMessage({
-      error: this._server.buildVersion === "" ? "Erro de validação." : "",
-      command: AddServerAction.UpdateWizard,
-      data: this._server
-    });
+    if (this._needUpdate) {
+      this._panel?.webview.postMessage({
+        command: AddServerAction.UpdateWeb,
+        data: this._server
+      });
+
+      this._needUpdate = false;
+    }
   }
 }
