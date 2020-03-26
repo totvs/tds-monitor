@@ -15,7 +15,6 @@ export function createError(severity: Severity, id: string, message: string): IE
   return { severity: severity, id: id, message: message };
 }
 
-
 export interface IMonitorItem {
   parent: string;
   id: string;
@@ -32,8 +31,8 @@ export interface IMonitorItem {
   environment: string;
   errors: IError[];
 
-  doUpdateProperties(content: any): boolean;
-  validConnection(): Promise<boolean>;
+  updateProperties(content: any): Promise<boolean>;
+  validConnection(): Promise<any>;
   validate(): Promise<void>;
 }
 

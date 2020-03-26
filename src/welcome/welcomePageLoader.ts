@@ -22,11 +22,6 @@ export class WelcomePageLoader {
     const ext = vscode.extensions.getExtension("TOTVS.tds-monitor");
     this._extensionPath = ext.extensionPath;
 
-    // this._disposables.push(Utils.onDidSelectedServer((newServer: SelectServer) => {
-    //   toggleServerToMonitor(undefined);
-    // }));
-
-
     this._panel = vscode.window.createWebviewPanel(
       "welcomePage",
       "Bem Vindo!",
@@ -48,7 +43,6 @@ export class WelcomePageLoader {
     });
 
     this._panel.webview.onDidReceiveMessage(
-
       (command: IWelcomePageAction) => {
         this.handleMessage(command);
       },
@@ -87,9 +81,8 @@ export class WelcomePageLoader {
     const homedir = require("os").homedir();
     const userFile = path.join(homedir, ".totvsls", "servers.json");
     const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
-    const workspaceFile = path.join(vscode.workspace.rootPath, ".tds", "monitor.json");
 
-    return { userFile: userFile, monitorFile: monitorFile, workspaceFile: workspaceFile };
+    return { userFile: userFile, monitorFile: monitorFile };
   }
 
   private async handleMessage(command: IWelcomePageAction) {

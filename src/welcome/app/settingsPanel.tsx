@@ -24,8 +24,7 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
 
   const locationOptions = [
     { value: "user", label: props.optionsLocation.userFile },
-    { value: "user_monitor", label: props.optionsLocation.monitorFile },
-    { value: "workspace", label: props.optionsLocation.workspaceFile }
+    { value: "user_monitor", label: props.optionsLocation.monitorFile }
   ];
 
   const saveData = (data: any) => {
@@ -45,7 +44,7 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
   ) => {
     const data = { ...state, showWelcomePage: event.target.checked };
 
-    setState(data); //[event.target.name]: event.target.checked });
+    setState(data);
     saveData(data);
   };
 
@@ -54,7 +53,7 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
   ) => {
     const data = { ...state, serverJsonLocation: event.target.value };
 
-    setState(data); //[event.target.name]: event.target.checked });
+    setState(data);
     saveData(data);
   };
 

@@ -25,34 +25,37 @@ export class MonitorItem implements IMonitorItem {
 	environment: string = "";
 	errors: IError[] = [];
 
-	public doUpdateProperties(content: any): boolean { //JSON format
+	public updateProperties(content: any): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			return resolve(this.doUpdateProperties(content));
+		});
+	}
+
+	private doUpdateProperties(content: any): boolean { //JSON format
 		let needUpdate = false;
 
 		for (const key in content) {
 			if (this.hasOwnProperty(key)) {
 				if (this[key] !== content[key]) {
+					if (typeof this[key] === "string") {
+						content[key] = content[key].trim ? content[key].trim() : content[key];
+					}
 					this[key] = content[key];
 					needUpdate = true;
-					if (key === "smartClient") {
-						this.doProcessIni();
-					}
 				}
 			} else {
 				console.warn(`doUpdateProperty: not found property ${content.name}`);
 			}
 		}
 
-		if (needUpdate) {
-			this.doValidate();
-		}
+		this.doValidate();
 
 		return needUpdate;
 	}
 
-	public validate(): Promise<void> {
-		return new Promise<void>((resolve) => {
-			this.doValidate();
-			resolve();
+	public async validate(): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			resolve(this.doValidate());
 		});
 	}
 
@@ -66,36 +69,25 @@ export class MonitorItem implements IMonitorItem {
 
 		this.errors = [];
 
-		if (this.name === "") {
-			error("name", ATT_REQ);
-		}
+		this.validateSmartClient().forEach((message: string) => {
+			error("smartClient", message);
+		});
 
 		if (this.type === "") { error("type", ATT_REQ); }
 		if (this.name === "") { error("name", ATT_REQ); }
-		if (this.port! > 0) { error("port", "Atributo requerido e maior que zero."); }
+		if (!(this.port > 0)) { error("port", ATT_REQ); }
 		if (this.address === "") { error("address", ATT_REQ); }
-		if (this.buildVersion === "") { error("buildVersion", ATT_REQ); }
-		if (this.smartClient === "") { error("smartClient", ATT_REQ); }
-
-		if (this.errors.length === 0) {
-			if (this.buildVersion === "" && this.address !== "") {
-				const result = await this.validConnection();
-				if (!result) {
-					this.buildVersion = "";
-					this.secure = false;
-					error("buildVersion", ATT_REQ);
-				}
-			}
-		}
-
-		if (this.includes.length === 0) { warn("includes", "Lista de pastas para busca não informada."); }
+		if (this.includes.length === -1) { warn("includes", "Lista de pastas para busca não informada."); }
 
 	}
 
-	private doProcessIni() {
+	private validateSmartClient(): string[] {
 		const file = this.smartClient;
+		const problems: string[] = [];
 
-		if (file) {
+		if (file === "") {
+			problems.push(ATT_REQ);
+		} else {
 			const scFile = vscode.Uri.parse("file:///" + file);
 
 			if (fs.existsSync(scFile.fsPath)) {
@@ -103,34 +95,38 @@ export class MonitorItem implements IMonitorItem {
 				const configFile = scFile.fsPath.replace(ext, ext === ext.toLocaleLowerCase() ? ".ini" : ".INI");
 
 				if (fs.existsSync(configFile)) {
-					try {
-						const buffer = fs.readFileSync(configFile);
-						const content = buffer.toString().toLowerCase();
-						const parseIni = ini.parse(content);
-						const drivers = parseIni.drivers;
-						const active = drivers.active;
-						const config = parseIni[active];
-						const address = config.server;
-						const port = config.port;
+					if (this.address === "") {
+						try {
+							const buffer = fs.readFileSync(configFile);
+							const content = buffer.toString().toLowerCase();
+							const parseIni = ini.parse(content);
+							const drivers = parseIni.drivers;
+							const active = drivers.active;
+							const config = parseIni[active];
+							const address = config.server;
+							const port = config.port;
 
-						if (this.address !== address) {
-							this.address = address;
-							this.buildVersion = "";
+							if (this.address !== address) {
+								this.address = address;
+								this.buildVersion = "";
+							}
+							if (this.port !== port) {
+								this.port = port;
+								this.buildVersion = "";
+							}
+						} catch {
+							vscode.window.showWarningMessage(`Não foi possível obter os dados de conexão.\nArquivo: ${configFile}`);
 						}
-						if (this.port !== port) {
-							this.port = port;
-							this.buildVersion = "";
-						}
-					} catch {
-						vscode.window.showWarningMessage(`Não foi possível obter os dados de conexão.\nArquivo: ${configFile}`);
-						this.buildVersion = "";
 					}
 				} else {
-					this.buildVersion = "";
-					vscode.window.showWarningMessage(`Não foi possível ler arquivo de configuração.\nArquivo: ${configFile}`);
+					problems.push("Arquivo de configuração não localizado. " + configFile);
 				}
+			} else {
+				problems.push("Arquivo não localizado.");
 			}
 		}
+
+		return problems;
 	}
 
 	connect(): Promise<boolean> {
@@ -141,23 +137,18 @@ export class MonitorItem implements IMonitorItem {
 		throw new Error("Method not implemented.");
 	}
 
-	public async validConnection(): Promise<boolean> {
+	public async validConnection(): Promise<any> {
 		const lsc = await getLanguageClient();
 
-		const request = lsc
+		const request = await lsc
 			.validation(this.address, parseInt("" + this.port))
 			.then((value) => {
-				this.buildVersion = value.build;
-				this.secure = value.secure;
-
-				return true;
+				return { buildVersion: value.build, secure: value.secure };
 			}, (reason) => {
 				throw reason;
 			})
 			.catch(err => {
-				this.errors.push(createError(Severity.ERROR, "buildVersion", err));
-
-				return false;
+				return undefined;
 			});
 
 		return request;

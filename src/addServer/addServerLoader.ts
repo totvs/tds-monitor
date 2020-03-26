@@ -9,7 +9,6 @@ export class AddServerLoader {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
   private _server: IMonitorItem;
-  private _needUpdate: boolean = false;
 
   constructor(newServer: IMonitorItem, extensionPath: string) {
     this._extensionPath = extensionPath;
@@ -34,40 +33,41 @@ export class AddServerLoader {
 
       this._panel.webview.onDidReceiveMessage(
         (command: IAddServerAction) => {
-          switch (command.action) {
-            case AddServerAction.UpdateModel:
-              this._needUpdate = this._server.doUpdateProperties(command.content);
-              break;
-
-            // case WizardAction.Save:
-            //   //this.saveFileContent(command.content);
-            //   break;
-
-            // case CommandAction.ValidConnection:
-            //   this.doUpdateProperties(newServer, command.content);
-            //   this.doValidConnection(newServer);
-            //   break;
-
-            // case CommandAction.UpdateProperty:
-            //   this.doUpdateProperty(newServer, command.content);
-
-            //   break;
-          }
-
-          this.updatePanel();
-          this._server.validate().then(
-            () => {
-              this._needUpdate = true;
-            }, (reason: any) => {
-              vscode.window.showErrorMessage(reason);
-              this._needUpdate = true;
-            }).finally(() => {
-              this.updatePanel();
-            });
+          this.handleMessage(command);
         },
         undefined,
         this._disposables
       );
+    }
+  }
+
+  private handleMessage(command: IAddServerAction) {
+
+    switch (command.action) {
+      case AddServerAction.UpdateModel:
+        const p = this._server.updateProperties(command.content);
+        p.then(async () => {
+          if (this._server.errors.length === 0) {
+            if (this._server.buildVersion === "" && this._server.address !== "") {
+              this._server.validConnection().then((result) => {
+                this._server.buildVersion = result.buildVersion;
+                this._server.secure = result.secure;
+              }).finally(() => {
+                this.updatePanel();
+              });
+            }
+          }
+        });
+        p.then((update) => {
+          if (update) {
+            this.updatePanel();
+          }
+        }).catch((r) => {
+          console.log(r);
+        }).finally(() => {
+          console.log("gim");
+        });
+        break;
     }
   }
 
@@ -109,14 +109,10 @@ export class AddServerLoader {
     </html>`;
   }
 
-  private updatePanel() {
-    if (this._needUpdate) {
-      this._panel?.webview.postMessage({
-        command: AddServerAction.UpdateWeb,
-        data: this._server
-      });
-
-      this._needUpdate = false;
-    }
+  private updatePanel(): void {
+    this._panel?.webview.postMessage({
+      command: AddServerAction.UpdateWeb,
+      data: this._server
+    });
   }
 }

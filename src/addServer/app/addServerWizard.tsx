@@ -40,8 +40,6 @@ let listener: EventListenerOrEventListenerObject | undefined = undefined;
 export default function AddServerWizard(props: IAddServerWizardProps) {
   const [activeStep, setActiveStep] = React.useState(1);
   const [state, setState] = React.useState<IMonitorItem>(props.monitorItem);
-  const [isReadOnly] = React.useState<boolean>(false);
-  const ref = React.useRef();
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
@@ -102,27 +100,25 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
     }
   };
 
-  const getError = (noErrorMessage: string = ""): string => {
-    let error = undefined;
-
-    if (ref.current !== undefined) {
-      console.log(ref);
-      console.log(ref.current);
-
-      const targetId = ref!.current!.id;
-      error = state.errors.find(err => {
-        if ((error.id === targetId) && (err.severity === Severity.ERROR)) {
-          return error;
+  const getError = (target: keyof IMonitorItem, noErrorMessage: string): string => {
+    let error = state.errors.find(err => {
+        console.log(err.id + "=" + err.message);
+        if (
+          err.severity === Severity.ERROR &&
+          ((target === undefined) || (err.id === target))
+        ) {
+          return err;
         }
 
+        return undefined;
       });
-    }
 
     return error ? error.message : noErrorMessage;
   };
 
-  const isError = (): boolean => {
-    return getError() !== undefined;
+  const isError = (target?: keyof IMonitorItem): boolean => {
+
+    return !(getError(target, "_no_error_") === "_no_error_");
   };
 
   const serverTypes = [
@@ -153,7 +149,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
               label="Destino"
               value={state.parent}
               onChange={handleChange}
-              helperText={getError(
+              helperText={getError("parent",
                 "Selecione a pasta para melhorar a organização."
               )}
               disabled
@@ -181,65 +177,55 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
             </TextField>
 
             <TextField
-              ref={ref}
-              error={isError()}
+              error={isError("smartClient")}
               name="smartClient"
               label="SmartClient"
               value={state.smartClient}
-              helperText={getError("Executável SmartClient.")}
-              inputProps={{
-                readOnly: isReadOnly
-              }}
+              helperText={getError("smartClient", "Executável SmartClient.")}
               onChange={handleChange}
               fullWidth
             />
             <TextField
-              error={isError()}
+              error={isError("name")}
               name="name"
               label="Nome"
               required
               value={state.name}
-              helperText={getError(
+              helperText={getError( "name",
                 "Informe o nome para identificação do registro."
               )}
-              InputProps={{
-                readOnly: isReadOnly
-              }}
               onChange={handleChange}
             />
             <TextField
-              error={isError()}
+              error={isError("address")}
               type="uri"
               name="address"
               label="Endereço"
               required
               value={state.address}
-              helperText={getError(
+              helperText={getError("address",
                 "Informe o nome ou endereço IP e porta de conexão."
               )}
               onChange={handleChange}
             />
             <TextField
-              error={isError()}
+              error={isError("port")}
               name="port"
               label="Porta"
               required
               type="number"
               value={state.port}
-              helperText={getError(
+              helperText={getError("port",
                 "Informe a porta de conexão. Normalmente é a mesma do SmartClient."
               )}
-              InputProps={{
-                readOnly: isReadOnly
-              }}
               onChange={handleChange}
             />
             <TextField
-              error={isError()}
-              name="version"
+              error={isError("buildVersion")}
+              name="buildVersion"
               label="Versão"
               value={state.buildVersion}
-              helperText={getError("Versão do servidor.")}
+              helperText={getError("buildVersion", "Versão do servidor.")}
               disabled
             />
             <FormControlLabel
@@ -259,7 +245,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
               <BottomNavigationAction
                 label={"Finish"}
                 value={0}
-                disabled={state.errors.length !== 0}
+                disabled={isError("buildVersion")}
                 icon={<DoneIcon />}
               />
               <BottomNavigationAction
