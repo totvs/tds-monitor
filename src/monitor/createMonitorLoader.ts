@@ -75,7 +75,7 @@ export class CreateMonitorLoader {
   }
 
   constructor() {
-    const ext = vscode.extensions.getExtension("TOTVS.tds-vscode");
+    const ext = vscode.extensions.getExtension("TOTVS.tds-monitor");
     this._extensionPath = ext.extensionPath;
 
     this._disposables.push(Utils.onDidSelectedServer((newServer: SelectServer) => {

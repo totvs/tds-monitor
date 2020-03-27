@@ -127,18 +127,6 @@
         "category": "TDSMonitor"
       },
       {
-        "command": "tds-monitor.connect",
-        "title": "%tds.package.connect%",
-        "enablement": "view == tds_monitor && viewItem == monitorItem",
-        "category": "TDSMonitor"
-      },
-      {
-        "command": "tds-monitor.disconnect",
-        "title": "%tds.package.disconnect%",
-        "enablement": "view == tds_monitor && viewItem == monitorItem",
-        "category": "TDSMonitor"
-      },
-      {
         "command": "tds-monitor.create",
         "title": "Novo servidor",
         "icon": {
@@ -153,12 +141,7 @@
         "category": "TDSMonitor"
       },
       {
-        "command": "tds-monitor.monitor",
-        "title": "Visão Monitor",
-        "category": "TDSMonitor"
-      },
-      {
-        "command": "tds-monitor.monitor.toggle",
+        "command": "tds-monitor.toggle",
         "title": "Monitorar",
         "category": "TDSMonitor",
         "icon": {
@@ -188,14 +171,9 @@
       "explorer/context": [],
       "view/item/context": [
         {
-          "command": "tds-monitor.connect",
+          "command": "tds-monitor.toggle",
           "when": "view == tds_monitor && viewItem == monitorItem",
           "group": "AAtotvsMonitor@1"
-        },
-        {
-          "command": "tds-monitor.disconnect",
-          "when": "view == tds_monitor && viewItem == monitorItem",
-          "group": "AAtotvsMonitor@2"
         },
         {
           "command": "tds-monitor.create",
