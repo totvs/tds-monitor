@@ -26,7 +26,7 @@ export interface IMonitorItem {
   secure: boolean;
   includes: string[];
   environments: string[];
-  smartClient?: string;
+  smartClient: string;
   token: string;
   environment: string;
   errors: IError[];

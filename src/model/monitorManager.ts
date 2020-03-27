@@ -93,13 +93,16 @@ class ServerManager {
   private loadServersConfig(): IServersConfig {
     const configFile = this.getFilename();
     const exist = fs.existsSync(configFile);
+    const serversConfig = new ServersConfig();
 
     if (exist) {
-      let content = fs.readFileSync(configFile).toString();
-      return JSON.parse(content);
+      const content = fs.readFileSync(configFile).toString();
+      const data = JSON.parse(content);
+
+      return data;
     }
 
-    return new ServersConfig();
+    return serversConfig;
   }
 
   /**
@@ -239,9 +242,13 @@ class ServerManager {
       throw new Error("Nome de identificação do servidor deve ser único.");
     }
 
+    serverItem.id = this.generateRandomID();
     this._serversConfig.configurations.push(serverItem);
     this.persistServersInfo();
     this.refresh();
+
+    vscode.window.showInformationMessage(
+      `Servidor [${serverItem.name}] registrado.`);
   }
 
   createServerItem(): TreeMonitorItem {

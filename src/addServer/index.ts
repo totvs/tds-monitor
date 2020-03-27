@@ -1,3 +1,3 @@
-import { AddServerLoader } from './addServerLoader';
+import { addServerLoader } from './addServerLoader';
 
-export { AddServerLoader as  AddServerLoader};
+export { addServerLoader as  AddServerLoader};

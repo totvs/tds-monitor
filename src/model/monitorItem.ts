@@ -20,7 +20,7 @@ export class MonitorItem implements IMonitorItem {
 	secure: boolean = false;
 	includes: string[] = [];
 	environments: string[] = [];
-	smartClient?: string = "M:/protheus/19-3-0-3/protheus/smartClient/smartclient.exe";
+	smartClient: string = "";
 	token: string = "";
 	environment: string = "";
 	errors: IError[] = [];
@@ -158,10 +158,10 @@ export class MonitorItem implements IMonitorItem {
 
 export class TreeMonitorItem extends vscode.TreeItem {
 
-	public isConnected: boolean = false;
-	public token: string = "";
 	public environment: string = "";
 	public listSessions: Array<any /*SessionSection*/> = [];
+
+	contextValue = 'monitorItem';
 
 	constructor(
 		public readonly serverItem: IMonitorItem,
@@ -183,7 +183,23 @@ export class TreeMonitorItem extends vscode.TreeItem {
 		return this.listSessions;
 	}
 
-	contextValue = 'monitorItem';
+	get token(): string {
+		return this.serverItem.token;
+	}
+
+	set token(value: string) {
+		this.serverItem.token = value;
+	}
+
+	iconPath = {
+		light: path.join(__filename, '..', '..', 'resources', 'light', 'monitor.svg'),
+		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'monitor.svg')
+	};
+
+	get isConnected(): boolean {
+		return this.token !== "";
+	}
+
 }
 
 export class EnvSection {

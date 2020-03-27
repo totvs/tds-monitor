@@ -1,16 +1,18 @@
 import { serverManager } from './model/monitorManager';
-import { MonitorItem } from './model/monitorItem';
+import { MonitorItem, TreeMonitorItem } from './model/monitorItem';
 import * as vscode from 'vscode';
+import { addServerLoader } from './addServer/addServerLoader';
 import { IMonitorItem } from './monitorInterfaces';
-import { AddServerLoader } from './addServer';
 
 export class ServerCommands {
 
     static register(context: vscode.ExtensionContext): any {
         let disposable = context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.create', () => ServerCommands.createMonitor(context)));
-        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.add', (serverItem: IMonitorItem) => ServerCommands.addMonitor(context, serverItem)));
+
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.delete', (monitorItem: MonitorItem) => ServerCommands.deleteMonitor(context, monitorItem)));
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.open.configuration', () => ServerCommands.openConfiguration(context)));
+		context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.connect', (treeItem: TreeMonitorItem) => ServerCommands.connect(treeItem)));
+		context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.disconnect', (treeItem: TreeMonitorItem) => ServerCommands.disconnect(treeItem)));
 
         //Comando para renomear item da visão de monitor.
         //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.rename', (serverItem: MonitorItem) => renameMonitor(serverItem)));
@@ -20,14 +22,23 @@ export class ServerCommands {
         return disposable;
     }
 
-    private static createMonitor(context: vscode.ExtensionContext) {
-        const server = serverManager.createServerItem();
-        const loader = new AddServerLoader(server.serverItem, context.extensionPath);
-        console.log(loader);
+    static disconnect(monitorItem: TreeMonitorItem): any {
+        monitorItem.token = "";
     }
 
-    private static addMonitor(context: vscode.ExtensionContext, serverItem: IMonitorItem) {
-        serverManager.add(serverItem);
+    static connect(monitorItem: TreeMonitorItem): any {
+        monitorItem.token = "XXXXXXXXXXXX";
+        // if (monitorItem.secure) {
+
+        // }
+
+        // //Verifica se ha um buildVersion cadastrado.
+        //         inputConnectionParameters(context, serverItem);
+    }
+
+    private static createMonitor(context: vscode.ExtensionContext) {
+        const server = serverManager.createServerItem();
+        addServerLoader(server.serverItem, context.extensionPath);
     }
 
     private static deleteMonitor(context: vscode.ExtensionContext, monitorItem: MonitorItem) {

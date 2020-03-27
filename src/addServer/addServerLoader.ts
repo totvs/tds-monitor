@@ -1,10 +1,16 @@
+import { serverManager } from './../model/monitorManager';
 import * as vscode from "vscode";
 import * as path from "path";
 
 import { IMonitorItem } from "../monitorInterfaces";
 import { IAddServerAction, AddServerAction } from "./action";
 
-export class AddServerLoader {
+export function addServerLoader(newServer: IMonitorItem, extensionPath: string) {
+  // tslint:disable-next-line: no-unused-expression
+  new AddServerLoader(newServer, extensionPath);
+}
+
+class AddServerLoader {
   protected readonly _panel: vscode.WebviewPanel | undefined;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
@@ -45,30 +51,71 @@ export class AddServerLoader {
 
     switch (command.action) {
       case AddServerAction.UpdateModel:
-        const p = this._server.updateProperties(command.content);
-        p.then(async () => {
-          if (this._server.errors.length === 0) {
-            if (this._server.buildVersion === "" && this._server.address !== "") {
-              this._server.validConnection().then((result) => {
-                this._server.buildVersion = result.buildVersion;
-                this._server.secure = result.secure;
-              }).finally(() => {
-                this.updatePanel();
-              });
-            }
-          }
-        });
-        p.then((update) => {
-          if (update) {
-            this.updatePanel();
-          }
-        }).catch((r) => {
-          console.log(r);
-        }).finally(() => {
-          console.log("gim");
-        });
+        this.updateModel(command.content);
+        break;
+      case AddServerAction.SelectSmartClient:
+        this.selectSmartClient(command.content);
+        break;
+      case AddServerAction.Close:
+        this._panel.dispose();
+        break;
+      case AddServerAction.SaveAndClose:
+        serverManager.add(this._server);
+        this._panel.dispose();
         break;
     }
+  }
+
+  private selectSmartClient(smartClientPath: string) {
+    let openDialogOptions: vscode.OpenDialogOptions = {
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+      openLabel: "Aplicação SmartClient",
+      defaultUri: vscode.Uri.parse("file:///" + smartClientPath),
+      filters: {
+        SmartClient: ["exe"],
+        AllFiles: ["*"]
+      }
+    };
+
+    vscode.window
+      .showOpenDialog(openDialogOptions)
+      .then(async (uri: vscode.Uri[] | undefined) => {
+        if (uri && uri.length > 0) {
+          this.updateModel({ smartClient: uri[0].fsPath });
+        } else {
+          vscode.window.showErrorMessage("No valid SmartClient file selected!");
+        }
+      });
+  }
+
+
+  private updateModel(content: any) {
+    let needUpdate: boolean = false;
+
+    const p = this._server.updateProperties(content);
+    p.then(async () => {
+      if (this._server.errors.length === 0) {
+        if (this._server.buildVersion === "" && this._server.address !== "") {
+          this._server.validConnection().then((result) => {
+            this._server.buildVersion = result.buildVersion;
+            this._server.secure = result.secure;
+          }).finally(() => {
+            this.updatePanel();
+          });
+        }
+      }
+    });
+    p.then((update) => {
+      needUpdate = update;
+    }).catch((r) => {
+      console.log(r);
+    }).finally(() => {
+      if (needUpdate) {
+        this.updatePanel();
+      }
+    });
   }
 
   private getWebviewContent(monitorItem: IMonitorItem): string {

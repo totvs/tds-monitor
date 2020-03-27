@@ -39,6 +39,8 @@ export class MonitorItemProvider implements vscode.TreeDataProvider<TreeMonitorI
 	 * Cria os itens da arvore de servidores
 	 */
 	private loadAndConfigMonitor() {
+		this.loadMonitorItems();
+
 		serverManager.onDidSelectedServer((server: IMonitorItem | null) => {
 			this.refresh();
 		});
@@ -47,8 +49,6 @@ export class MonitorItemProvider implements vscode.TreeDataProvider<TreeMonitorI
 			this.loadMonitorItems();
 			this.refresh();
 		});
-
-		this.loadMonitorItems();
 	}
 
 	private loadMonitorItems() {

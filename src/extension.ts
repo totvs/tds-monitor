@@ -8,6 +8,7 @@ import { ServerCommands } from './monitorCommands';
 import { getLanguageClient } from './ls/monitorClient';
 import { isConfigurationChanged } from './ls/languageServerSettings';
 import { showWelcomePage } from './welcome/welcomePageLoader';
+import { MonitorsExplorer } from './view/monitorsExplorer';
 
 export let languageClient: LanguageClient;
 
@@ -39,7 +40,15 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  //Mostra a pagina de Welcome.
+  //View
+  let viewServer = new MonitorsExplorer(context);
+  if (!viewServer) {
+    window
+      .showInformationMessage("Não foi possível inicializar visão 'TDS Monitor'."
+      );
+  }
+
+  //Mostra a pagina de Boas Vindas.
   showWelcomePage();
   console.log('Congratulations, your extension "tds-monitor" is now active!');
   window.showInformationMessage(

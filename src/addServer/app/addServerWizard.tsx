@@ -5,6 +5,7 @@ import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
 import CancelIcon from "@material-ui/icons/Cancel";
 import DoneIcon from "@material-ui/icons/Done";
+import OpenInBroserIcon from "@material-ui/icons/OpenInBrowser";
 
 import {
   Typography,
@@ -16,7 +17,8 @@ import {
   Toolbar,
   IconButton,
   MenuItem,
-  SvgIcon
+  SvgIcon,
+  InputAdornment
 } from "@material-ui/core";
 import { IAddServerAction, AddServerAction } from "../action";
 
@@ -72,8 +74,17 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
 
   const handleNavButton = (event: React.ChangeEvent<{}>, value: number) => {
     let command: IAddServerAction = {
-      action: AddServerAction.NavButton,
-      content: value
+      action: value,
+      content: state
+    };
+
+    props.vscode.postMessage(command);
+  };
+
+  const selectSmartClient = () => {
+    let command: IAddServerAction = {
+      action: AddServerAction.SelectSmartClient,
+      content: state.smartClient
     };
 
     props.vscode.postMessage(command);
@@ -102,7 +113,6 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
 
   const getError = (target: keyof IMonitorItem, noErrorMessage: string): string => {
     let error = state.errors.find(err => {
-        console.log(err.id + "=" + err.message);
         if (
           err.severity === Severity.ERROR &&
           ((target === undefined) || (err.id === target))
@@ -184,6 +194,9 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
               helperText={getError("smartClient", "Executável SmartClient.")}
               onChange={handleChange}
               fullWidth
+              InputProps={{
+                endAdornment: <InputAdornment position="end" onClick={selectSmartClient}><OpenInBroserIcon /></InputAdornment>,
+              }}
             />
             <TextField
               error={isError("name")}
@@ -233,6 +246,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
               control={<Checkbox checked={state.secure} value="ssl" />}
               label="Conexão segura (SSL)"
               onChange={handleChange}
+              disabled
             />
             <BottomNavigation
               value={activeStep}
@@ -244,13 +258,13 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
             >
               <BottomNavigationAction
                 label={"Finish"}
-                value={0}
+                value={AddServerAction.SaveAndClose}
                 disabled={isError("buildVersion")}
                 icon={<DoneIcon />}
               />
               <BottomNavigationAction
                 label="Cancel"
-                value={1}
+                value={AddServerAction.Close}
                 icon={<CancelIcon />}
               />
             </BottomNavigation>
