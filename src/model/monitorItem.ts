@@ -25,13 +25,11 @@ export class MonitorItem implements IMonitorItem {
 	environment: string = "";
 	errors: IError[] = [];
 
-	public updateProperties(content: any, valid: boolean = true): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
-			return resolve(this.doUpdateProperties(content, valid));
-		});
-	}
+	reconnectToken: string;
+	needAuthentication: any;
+	user: string;
 
-	private doUpdateProperties(content: any, valid: boolean): boolean { //JSON format
+	public initialize(content: any): boolean { //JSON format
 		let needUpdate = false;
 
 		for (const key in content) {
@@ -48,9 +46,23 @@ export class MonitorItem implements IMonitorItem {
 			}
 		}
 
-		if (valid) {
-			this.doValidate();
+		if (this.reconnectToken === "") {
+			this.reconnectToken = this.token;
 		}
+
+		return needUpdate;
+	}
+
+	public updateProperties(content: any): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			return resolve(this.doUpdateProperties(content));
+		});
+	}
+
+	private doUpdateProperties(content: any): boolean { //JSON format
+		let needUpdate = this.initialize(content);
+
+		this.doValidate();
 
 		return needUpdate;
 	}
@@ -142,21 +154,38 @@ export class MonitorItem implements IMonitorItem {
 			(this.type === "protheus") ? 1 : 2;
 
 		const request = await lsc
-			.connect(type, this.id, this.name, this.token, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
+			.connect(type, this.id, this.name, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
 			.then((value: any) => {
-				return { buildVersion: value.build, secure: value.secure };
+				this.token = value.token;
+				this.needAuthentication = value.needAuthentication;
+
+				return true;
 			}, (reason) => {
 				throw reason;
-			})
-			.catch(err => {
-				return undefined;
 			});
 
 		return request;
 	}
 
-	public reconnect(): Promise<boolean> {
-		throw new Error("Method not implemented.");
+	public async reconnect(): Promise<boolean> {
+		const lsc = await getLanguageClient();
+
+		const request = await lsc
+			.reconnect(this.name, this.reconnectToken)
+			.then((value: {
+				connectionToken: string;
+				environment: string;
+				user: string;
+			}) => {
+				this.token = value.connectionToken;
+				this.environment = value.environment;
+				this.user = value.user;
+				return true;
+			}, (reason) => {
+				throw reason;
+			});
+
+		return request;
 	}
 
 	public async validConnection(): Promise<any> {
@@ -165,12 +194,11 @@ export class MonitorItem implements IMonitorItem {
 		const request = await lsc
 			.validation(this.address, parseInt("" + this.port))
 			.then((value) => {
-				return { buildVersion: value.build, secure: value.secure };
+				this.buildVersion = value.build;
+				this.secure = value.secure;
+				return true;
 			}, (reason) => {
 				throw reason;
-			})
-			.catch(err => {
-				return undefined;
 			});
 
 		return request;
@@ -205,9 +233,9 @@ export class TreeMonitorItem extends vscode.TreeItem {
 	}
 
 	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light',
-		false?'monitor.connected.svg':'monitor.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'monitor.svg')
+		light: path.join(__filename, '..', '..',  '..', 'resources', 'light',
+			false ? 'monitor.connected.svg' : 'monitor.svg'),
+		dark: path.join(__filename, '..', '..',  '..', 'resources', 'dark', 'monitor.svg')
 	};
 
 

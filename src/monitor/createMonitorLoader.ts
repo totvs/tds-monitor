@@ -56,22 +56,19 @@ export class CreateMonitorLoader {
 
   public toggleServerToMonitor(serverItem: IMonitorItem) { /*TreeItem*/
 
-    const server2 = Utils.getCurrentServer();
-    const server = Utils.getServerById(server2.id);
-
-    //let pos = this._serverList.indexOf(server2);
+    //let pos = this._serverList.indexOf(serverItem);
 
     this._serverList = Array<IMonitorItem>();
-    this._serverList.push(server2);
+    this._serverList.push(serverItem);
 
     this._panel.webview.postMessage({
       command: MonitorViewAction.ToggleServer,
       data: this._serverList,
-      current: server2,
-      server: server
+      current: serverItem,
+      server: serverItem
     });
 
-    this.updateUsers(server2);
+    this.updateUsers(serverItem);
   }
 
   constructor() {

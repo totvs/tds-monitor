@@ -7,7 +7,8 @@ module.exports = {
   entry: {
     monitorView: "./src/monitor/app/index.tsx",
     welcomePage: "./src/welcome/app/index.tsx",
-    addServer: "./src/addServer/app/index.tsx"
+    addServer: "./src/addServer/app/index.tsx",
+    connectDialog : "./src/connectDialog/app/index.tsx"
   },
   output: {
     //Todos os arquivos tsx serão compilados e gerados seus equivalentes js na mesma pasta

@@ -16,6 +16,8 @@ export function createError(severity: Severity, id: string, message: string): IE
 }
 
 export interface IMonitorItem {
+  needAuthentication: any;
+  reconnectToken: any;
   parent: string;
   id: string;
   type: string;
@@ -31,12 +33,13 @@ export interface IMonitorItem {
   environment: string;
   errors: IError[];
 
+  initialize(element: any): void;
   isConnected(): boolean;
 
   connect(): Promise<boolean>;
   reconnect(): Promise<boolean>;
 
-  updateProperties(content: any, valid?: boolean): Promise<boolean>;
+  updateProperties(content: any): Promise<boolean>;
   validConnection(): Promise<any>;
   validate(): Promise<void>;
 }

@@ -39,7 +39,7 @@ export class MonitorLanguageClient extends LanguageClient {
     return request;
   }
 
-  public connect(type: number, id: string, name: string, token: string, address: string, port: number, environment: string, buildVersion: string, secure: boolean) {
+  public connect(type: number, id: string, name: string, address: string, port: number, environment: string, buildVersion: string, secure: boolean) {
     const request = super
       .sendRequest('$totvsserver/connect', {
         connectionInfo: {
@@ -55,13 +55,15 @@ export class MonitorLanguageClient extends LanguageClient {
           autoReconnect: true
         }
       }).then(
-        (connectionNode: {	id: any;
-          osType: number;
+        (connectionNode: {
           connectionToken: string;
           needAuthentication: boolean;
         }) => {
-          let token: string = connectionNode.connectionToken;
-          if (token) {
+          if (connectionNode.connectionToken) {
+            return {
+              token: connectionNode.connectionToken,
+              needAuthentication: connectionNode.needAuthentication
+            };
           } else {
             throw new Error('Error connecting server');
           }
@@ -121,7 +123,7 @@ export class MonitorLanguageClient extends LanguageClient {
     return request;
   }
 
-  public reconnect(name: string, connectionToken: string, environment: string) {
+  public reconnect(name: string, connectionToken: string): Promise<any> {
     const request = super
       .sendRequest('$totvsserver/reconnect', {
         reconnectInfo: {
@@ -133,18 +135,7 @@ export class MonitorLanguageClient extends LanguageClient {
         environment: string;
         user: string;
       }) => {
-        // let token: string = reconnectNode.connectionToken;
-        // if (token) {
-        //   this. environment: string = reconnectNode.environment;
-        //   let user: string = reconnectNode.user;
-        //   //vscode.window.showInformationMessage('Server ' + serverItem.label + ' connected!');
-        //   if (token !== connectionToken) {
-        //   }
-
-        //   return true;
-        // } else {
-        //   throw new Error('Error reconnecting server');
-        // }
+        return reconnectNode;
       }, (err) => {
         throw err;
       });

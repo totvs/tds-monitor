@@ -126,8 +126,8 @@
         "title": "Configuração",
         "category": "TDSMonitor",
         "icon": {
-          "light": "resources/light/settings.png",
-          "dark": "resources/dark/settings.png"
+          "light": "resources/light/settings.svn",
+          "dark": "resources/dark/settings.svn"
         }
       },
       {

@@ -4,6 +4,7 @@ import { TreeMonitorItem } from './model/monitorItem';
 import * as vscode from 'vscode';
 import { addServerLoader } from './addServer/addServerLoader';
 import { toggleServerToMonitor } from './monitor/createMonitorLoader';
+import { connectDialogLoader } from './connectDialog/connectDialogLoader';
 
 export class ServerCommands {
 
@@ -11,7 +12,7 @@ export class ServerCommands {
         let disposable = context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.create', () => { ServerCommands.createMonitor(context); }));
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.delete', (item: TreeMonitorItem) => { ServerCommands.deleteMonitor(item); }));
-        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.toggle', (item: TreeMonitorItem) => { ServerCommands.toggleMonitor(item); }));
+        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.toggle', (item: TreeMonitorItem) => { ServerCommands.toggleMonitor(context, item); }));
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.open.configuration', () => ServerCommands.openConfiguration(context)));
 
@@ -37,25 +38,56 @@ export class ServerCommands {
         vscode.window.showTextDocument(vscode.Uri.file(filename));
     }
 
-    private static toggleMonitor(monitorItem: TreeMonitorItem) {
+    private static openConnectDialog(server: IMonitorItem) {
+        connectDialogLoader(server);
+    }
+
+    private static toggleMonitor(context: vscode.ExtensionContext, monitorItem: TreeMonitorItem) {
         let server: IMonitorItem = monitorItem.serverItem as IMonitorItem;
+        const disposables: vscode.Disposable[] = [];
+        const status = (message: string): void => {
+            disposables.push(vscode.window.setStatusBarMessage(message, 5000));
+        };
 
         if (!server.isConnected()) {
-            server.connect().then(
-                (value) => {
-                    vscode.window.showInformationMessage("Conexão efetuada.");
-                    return value;
-                }).then((value) => {
-                    if (value && server.secure) {
-                        vscode.window.showInformationMessage("secure.");
-                    }
-                    toggleServerToMonitor(monitorItem.serverItem);
-                }).catch((reason) => {
-                    vscode.window.showInformationMessage(reason);
-                }).finally(() => {
-                    vscode.window.showInformationMessage("refresh");
-                }
-                );
+            status(`Tentando reconexão: ${server.name}`);
+
+            server
+                .reconnect()
+                .then(
+                    (value) => {
+                        vscode.window.showInformationMessage("Reconexão efetuada.");
+                    }, (reason) => {
+                        status(`Tentando conexão: ${server.name}`);
+
+                        if (reason['code'] === 4081) {
+                            server.connect().then(
+                                (value) => {
+                                    vscode.window.showInformationMessage("Conexão efetuada.");
+                                    return value;
+                                }).then((value: any) => {
+                                    if (value && server.needAuthentication) {
+                                        status(`Solicitando credencias: ${server.name}`);
+                                        ServerCommands.openConnectDialog(server);
+                                    } else {
+                                        status(`Iniciando monitoramento: ${server.name}`);
+                                        toggleServerToMonitor(monitorItem.serverItem);
+                                    }
+                                }).catch((reason) => {
+                                    if (reason['code'] === 4081) {
+                                        status(`Solicitando credencias: ${server.name}`);
+                                        ServerCommands.openConnectDialog(server);
+                                    }
+                                });
+                        } else {
+                            console.log(reason);
+                        }
+                    }).finally(() => {
+                        vscode.window.showInformationMessage("refresh");
+                    })
+                .finally(() => {
+                    //disposables.forEach((d) => {d});
+                });
         } else {
             toggleServerToMonitor(monitorItem.serverItem);
         }

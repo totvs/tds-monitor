@@ -23,17 +23,6 @@ class ServerManager {
   constructor() {
     this._serversConfig = this.loadServersConfig();
 
-    // const elements: Array<any> = [];
-    // for (let index = 0; index < this._serversConfig.configurations.length; index++) {
-    //   const element = this._serversConfig.configurations[index];
-
-    //   const treeItem = this.createMonitorItem();
-    //   // tslint:disable-next-line: no-unused-expression
-    //   async () => { await treeItem.updateProperties(element, false); };
-    //   elements.push(treeItem);
-    // }
-    // this._serversConfig.configurations = elements;
-
     this.setCurrentServer(null);
     this.addServersConfigListener();
     this.refresh();
@@ -111,6 +100,41 @@ class ServerManager {
     if (exist) {
       const content = fs.readFileSync(configFile).toString();
       const data = JSON.parse(content);
+
+      const elements: Array<any> = [];
+
+      for (let index = 0; index < data.configurations.length; index++) {
+        const element = data.configurations[index];
+        const monitorItem = this.createMonitorItem();
+        // tslint:disable-next-line: no-unused-expression
+        monitorItem.initialize(element);
+        monitorItem.token = "";
+
+        const savedToken = data.savedTokens[`${monitorItem.id}:${monitorItem.environment}`];
+        if (savedToken) {
+          monitorItem.reconnectToken = savedToken.token;
+        }
+
+        // "savedTokens": [
+        //   [
+        //     "vmstss1zzpqk4x1r6uhpnlkv2vs9c:p12",
+        //     {
+        //       "id": "vmstss1zzpqk4x1r6uhpnlkv2vs9c",
+        //       "token": "djI6dm1zdHNzMXp6cHFrNHgxcjZ1aHBubGt2MnZzOWM6MTpsb2NhbGhvc3Q6MTkwMToxOjcuMDAuMTkxMjA1UA==:djE6cDEyOmFkbWluOkZhOUNvTDBmL2M5ckF6Tll6dFFQRTZWWHl5b25ZQThQZjJtQysyRnFzYms9|djI6MTU4NDIyMjM1NDowOjE6MQ==.Xh6DQV31bEakjrjX/8oeZvgGNJL+wqMtl2AQl6AbPTCxH8eeIzuRH71J1qAgYm9wy7maYk/CDai3SuXR+vzrSe5gioVTnfi38pgiUI+198gtOuUtiWai5gamZggFG6EB0fAqjfGAbMznSvo1VwRvy9PeTEwQUrpL3OexEOU8LV7TPtr/6gaCHV7ao+CmqUVcG7POJXD8YKcjIUHbHmOtw5f110QpaNWvsU6fbHgnR4IL02q1h3SYw9wCOgL6KdvWVraGMHr/0cUtfk8aqqSMrzJP8zTeQqQuidIZgO/3rKgw18iYWYpV/znevLtEuPPoOtnWyhE60kFJ6xF9hFnh+Q=="
+        //     }
+        //   ],
+        //   [
+        //     "enqadq1eq6bk7q9b7unzq88ihammd:p12",
+        //     {
+        //       "id": "enqadq1eq6bk7q9b7unzq88ihammd",
+        //       "token": "djI6ZW5xYWRxMWVxNmJrN3E5Yjd1bnpxODhpaGFtbWQ6MTpsb2NhbGhvc3Q6NTAzNjowOjcuMDAuMTMxMjI3QQ==:djE6cDEyOmFkbWluOkhJZ0tsbldLTHpZTmhLWFJOcjN4Wk1acWpNblFWZk0waTM1ZVcrZGw2TEE9|djI6MTU4NDIyMjIwNzowOjE6MQ==.fn1ukmo6w6h+QKDF8DCshW9oI8+CRaxftp2ZOyX9pGF26YAtji0dUtWKGhOowulhyYS96ez5Q4Pm2r4cqgY3qBsPTyFicNAvFGa0eYCHXtDK43AurL3MnYpuhBpwQAzeYPkgE8fLXmMSQrtFdzZAn3SKhXrGTHcVOihjWf4ertsJ1C90sDtUHtm02NTtpC02jYEd77BGOpo4xM6APa5Il2xF6x0CbTATQiMkninaizCLk8UkvdPYFnG99dYlACvE81Cctehs0+7qct9dIEQssHIqeGJUcqAX9GIpnMR/XuhfeBufAqKJzfNCuXao5jl2mGAFuwz332OAW44u0Ha4yw=="
+        //     }
+        //   ]
+        // ]
+
+        elements.push(monitorItem);
+      }
+      data.configurations = elements;
 
       return data;
     }
