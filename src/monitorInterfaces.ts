@@ -31,7 +31,12 @@ export interface IMonitorItem {
   environment: string;
   errors: IError[];
 
-  updateProperties(content: any): Promise<boolean>;
+  isConnected(): boolean;
+
+  connect(): Promise<boolean>;
+  reconnect(): Promise<boolean>;
+
+  updateProperties(content: any, valid?: boolean): Promise<boolean>;
   validConnection(): Promise<any>;
   validate(): Promise<void>;
 }

@@ -122,6 +122,15 @@
     },
     "commands": [
       {
+        "command": "tds-monitor.open.configuration",
+        "title": "Configuração",
+        "category": "TDSMonitor",
+        "icon": {
+          "light": "resources/light/settings.png",
+          "dark": "resources/dark/settings.png"
+        }
+      },
+      {
         "command": "tds-monitor.showWelcomePage",
         "title": "Boas vindas",
         "category": "TDSMonitor"
@@ -191,10 +200,14 @@
           "command": "tds-monitor.create",
           "when": "view == tds_monitor",
           "group": "navigation"
+        },
+        {
+          "command": "tds-monitor.open.configuration",
+          "when": "view == tds_monitor",
+          "group": "navigation"
         }
       ],
-      "commandPalette": [
-      ]
+      "commandPalette": []
     }
   }
 }

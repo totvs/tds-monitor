@@ -25,13 +25,13 @@ export class MonitorItem implements IMonitorItem {
 	environment: string = "";
 	errors: IError[] = [];
 
-	public updateProperties(content: any): Promise<boolean> {
+	public updateProperties(content: any, valid: boolean = true): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			return resolve(this.doUpdateProperties(content));
+			return resolve(this.doUpdateProperties(content, valid));
 		});
 	}
 
-	private doUpdateProperties(content: any): boolean { //JSON format
+	private doUpdateProperties(content: any, valid: boolean): boolean { //JSON format
 		let needUpdate = false;
 
 		for (const key in content) {
@@ -48,7 +48,9 @@ export class MonitorItem implements IMonitorItem {
 			}
 		}
 
-		this.doValidate();
+		if (valid) {
+			this.doValidate();
+		}
 
 		return needUpdate;
 	}
@@ -129,11 +131,31 @@ export class MonitorItem implements IMonitorItem {
 		return problems;
 	}
 
-	connect(): Promise<boolean> {
-		throw new Error("Method not implemented.");
+	public isConnected(): boolean {
+		return this.token !== "";
 	}
 
-	reconnect(): Promise<boolean> {
+	public async connect(): Promise<boolean> {
+		const lsc = await getLanguageClient();
+
+		const type: number = (this.type === "totvs_server_protheus") ? 1 :
+			(this.type === "protheus") ? 1 : 2;
+
+		const request = await lsc
+			.connect(type, this.id, this.name, this.token, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
+			.then((value: any) => {
+				return { buildVersion: value.build, secure: value.secure };
+			}, (reason) => {
+				throw reason;
+			})
+			.catch(err => {
+				return undefined;
+			});
+
+		return request;
+	}
+
+	public reconnect(): Promise<boolean> {
 		throw new Error("Method not implemented.");
 	}
 
@@ -158,7 +180,6 @@ export class MonitorItem implements IMonitorItem {
 
 export class TreeMonitorItem extends vscode.TreeItem {
 
-	public environment: string = "";
 	public listSessions: Array<any /*SessionSection*/> = [];
 
 	contextValue = 'monitorItem';
@@ -183,21 +204,15 @@ export class TreeMonitorItem extends vscode.TreeItem {
 		return this.listSessions;
 	}
 
-	get token(): string {
-		return this.serverItem.token;
-	}
-
-	set token(value: string) {
-		this.serverItem.token = value;
-	}
-
 	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light', 'monitor.svg'),
+		light: path.join(__filename, '..', '..', 'resources', 'light',
+		false?'monitor.connected.svg':'monitor.svg'),
 		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'monitor.svg')
 	};
 
+
 	get isConnected(): boolean {
-		return this.token !== "";
+		return this.serverItem.isConnected();
 	}
 
 }

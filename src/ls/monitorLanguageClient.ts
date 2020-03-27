@@ -39,6 +39,119 @@ export class MonitorLanguageClient extends LanguageClient {
     return request;
   }
 
+  public connect(type: number, id: string, name: string, token: string, address: string, port: number, environment: string, buildVersion: string, secure: boolean) {
+    const request = super
+      .sendRequest('$totvsserver/connect', {
+        connectionInfo: {
+          connType: 1,
+          serverName: name,
+          identification: id,
+          serverType: type,
+          server: address,
+          port: port,
+          buildVersion: buildVersion,
+          bSecure: secure,
+          environment: environment,
+          autoReconnect: true
+        }
+      }).then(
+        (connectionNode: {	id: any;
+          osType: number;
+          connectionToken: string;
+          needAuthentication: boolean;
+        }) => {
+          let token: string = connectionNode.connectionToken;
+          if (token) {
+          } else {
+            throw new Error('Error connecting server');
+          }
+        }, (err) => {
+          throw err;
+        }
+      );
+
+    return request;
+  }
+
+  authenticate(token: string, environment: string, user: string, password: string) {
+    const request = super
+      .sendRequest('$totvsserver/authentication', {
+        authenticationInfo: {
+          connectionToken: token,
+          environment: environment,
+          user: user,
+          password: password
+        }
+      }).then((value: {
+        id: any;
+        osType: number;
+        connectionToken: string;
+      }) => {
+        let token: string = value.connectionToken;
+        if (token) {
+          return true;
+        }
+        return false;
+      }, (err) => {
+        throw err;
+      });
+
+    return request;
+  }
+
+  public disconnect(token: string, name: string): Promise<void> {
+    const request = super
+      .sendRequest('$totvsserver/disconnect', {
+        disconnectInfo: {
+          connectionToken: token,
+          serverName: name
+        }
+      }).then((disconnectInfo: {
+        id: any;
+        code: any;
+        message: string;
+      }) => {
+        if (disconnectInfo !== undefined && disconnectInfo.code === undefined) {
+
+        }
+      }, (err) => {
+        throw err;
+      });
+
+    return request;
+  }
+
+  public reconnect(name: string, connectionToken: string, environment: string) {
+    const request = super
+      .sendRequest('$totvsserver/reconnect', {
+        reconnectInfo: {
+          connectionToken: connectionToken,
+          serverName: name
+        }
+      }).then((reconnectNode: {
+        connectionToken: string;
+        environment: string;
+        user: string;
+      }) => {
+        // let token: string = reconnectNode.connectionToken;
+        // if (token) {
+        //   this. environment: string = reconnectNode.environment;
+        //   let user: string = reconnectNode.user;
+        //   //vscode.window.showInformationMessage('Server ' + serverItem.label + ' connected!');
+        //   if (token !== connectionToken) {
+        //   }
+
+        //   return true;
+        // } else {
+        //   throw new Error('Error reconnecting server');
+        // }
+      }, (err) => {
+        throw err;
+      });
+
+    return request;
+  }
+
   public _getId(): Promise<string> {
     const request = super.sendRequest("$totvsserver/getId").then(
       (response: any) => {

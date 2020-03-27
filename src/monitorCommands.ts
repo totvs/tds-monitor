@@ -1,5 +1,6 @@
+import { IMonitorItem } from './monitorInterfaces';
 import { serverManager } from './model/monitorManager';
-import { MonitorItem, TreeMonitorItem } from './model/monitorItem';
+import { TreeMonitorItem } from './model/monitorItem';
 import * as vscode from 'vscode';
 import { addServerLoader } from './addServer/addServerLoader';
 import { toggleServerToMonitor } from './monitor/createMonitorLoader';
@@ -23,7 +24,7 @@ export class ServerCommands {
     }
 
     private static createMonitor(context: vscode.ExtensionContext) {
-        const server = serverManager.createServerItem();
+        const server = serverManager.createMonitorTreeItem();
         addServerLoader(server.serverItem, context.extensionPath);
     }
 
@@ -37,7 +38,27 @@ export class ServerCommands {
     }
 
     private static toggleMonitor(monitorItem: TreeMonitorItem) {
-        toggleServerToMonitor(monitorItem.serverItem);
+        let server: IMonitorItem = monitorItem.serverItem as IMonitorItem;
+
+        if (!server.isConnected()) {
+            server.connect().then(
+                (value) => {
+                    vscode.window.showInformationMessage("Conexão efetuada.");
+                    return value;
+                }).then((value) => {
+                    if (value && server.secure) {
+                        vscode.window.showInformationMessage("secure.");
+                    }
+                    toggleServerToMonitor(monitorItem.serverItem);
+                }).catch((reason) => {
+                    vscode.window.showInformationMessage(reason);
+                }).finally(() => {
+                    vscode.window.showInformationMessage("refresh");
+                }
+                );
+        } else {
+            toggleServerToMonitor(monitorItem.serverItem);
+        }
     }
 
 }

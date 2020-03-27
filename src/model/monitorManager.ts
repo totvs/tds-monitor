@@ -22,8 +22,21 @@ class ServerManager {
 
   constructor() {
     this._serversConfig = this.loadServersConfig();
+
+    // const elements: Array<any> = [];
+    // for (let index = 0; index < this._serversConfig.configurations.length; index++) {
+    //   const element = this._serversConfig.configurations[index];
+
+    //   const treeItem = this.createMonitorItem();
+    //   // tslint:disable-next-line: no-unused-expression
+    //   async () => { await treeItem.updateProperties(element, false); };
+    //   elements.push(treeItem);
+    // }
+    // this._serversConfig.configurations = elements;
+
     this.setCurrentServer(null);
     this.addServersConfigListener();
+    this.refresh();
 
     console.debug("tds-monitor: server manager ready.");
   }
@@ -75,7 +88,7 @@ class ServerManager {
   /**
    * Gera um id de servidor
    */
-  private generateRandomID() {
+  public generateRandomID() {
     return (
       Math.random()
         .toString(36)
@@ -251,14 +264,22 @@ class ServerManager {
       `Servidor [${serverItem.name}] registrado.`);
   }
 
-  createServerItem(): TreeMonitorItem {
+  public createMonitorTreeItem(monitorItem?: IMonitorItem, name?: string): TreeMonitorItem {
+    let mi = monitorItem;
+
+    if (!mi) {
+      mi = new MonitorItem();
+      mi.name = name ? "Novo " + this.getServers().length : name;
+    }
+
+    return new TreeMonitorItem(mi);
+  }
+
+  public createMonitorItem(name?: string): IMonitorItem {
     const mi = new MonitorItem();
-    mi.name = "Novo " + this.getServers().length;
+    mi.name = name ? "Novo " + this.getServers().length : name;
 
-    const si = new TreeMonitorItem(mi);
-    si.id = this.generateRandomID();
-
-    return si;
+    return mi;
   }
 
   removeExpiredAuthorization(): void {
