@@ -14,6 +14,6 @@ const vscode = window.acquireVsCodeApi();
 const serverItem = window.initialData as IMonitorItem;
 
 ReactDOM.render(
-  <AddServerWizard  vscode={vscode} monitorItem={serverItem}/>,
+  <AddServerWizard vscode={vscode} monitorItem={serverItem}/>,
   document.getElementById("root")
 );

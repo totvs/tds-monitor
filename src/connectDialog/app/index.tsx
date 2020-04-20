@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { IMonitorItem } from "../../monitorInterfaces";
 import ConnectDialog from "./connectDialog";
-import ErrorBoundary from "../../helper/errorBoundary";
 
 declare global {
   interface Window {
@@ -10,12 +10,10 @@ declare global {
   }
 }
 
-//const vscode = window.acquireVsCodeApi();
-//const serverItem = window.initialData as IMonitorItem;
-//vscode={vscode} monitorItem={serverItem}
+const vscode = window.acquireVsCodeApi();
+const serverItem = window.initialData as IMonitorItem;
+
 ReactDOM.render(
-  <ErrorBoundary>
-  <ConnectDialog />
-  </ErrorBoundary>,
+  <ConnectDialog vscode={vscode} monitorItem={serverItem} />,
   document.getElementById("root")
 );

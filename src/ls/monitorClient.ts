@@ -140,7 +140,6 @@ export function getLanguageClient(): Promise<MonitorLanguageClient> {
   languageClient
     .onReady()
     .then(() => {
-      window.showInformationMessage("TOTVS Language Server: started");
 
       syncSettings();
 

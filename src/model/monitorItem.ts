@@ -42,7 +42,7 @@ export class MonitorItem implements IMonitorItem {
 					needUpdate = true;
 				}
 			} else {
-				console.warn(`doUpdateProperty: not found property ${content.name}`);
+				console.warn(`doUpdateProperty: not found property ${key} for ${content.name}`);
 			}
 		}
 

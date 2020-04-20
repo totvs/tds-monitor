@@ -15,6 +15,7 @@ export class ServerCommands {
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.toggle', (item: TreeMonitorItem) => { ServerCommands.toggleMonitor(context, item); }));
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.open.configuration', () => ServerCommands.openConfiguration(context)));
+        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.show-connect-dialog', async (serverItem: IMonitorItem) => await ServerCommands.openConnectDialog(serverItem)));
 
         //Comando para renomear item da visão de monitor.
         //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.rename', (serverItem: MonitorItem) => renameMonitor(serverItem)));
@@ -38,7 +39,8 @@ export class ServerCommands {
         vscode.window.showTextDocument(vscode.Uri.file(filename));
     }
 
-    private static openConnectDialog(server: IMonitorItem) {
+    private static openConnectDialog(serverItem: IMonitorItem) {
+        const server: IMonitorItem = serverItem as IMonitorItem;
         connectDialogLoader(server);
     }
 
@@ -68,7 +70,7 @@ export class ServerCommands {
                                 }).then((value: any) => {
                                     if (value && server.needAuthentication) {
                                         status(`Solicitando credencias: ${server.name}`);
-                                        ServerCommands.openConnectDialog(server);
+                                        vscode.commands.executeCommand('tds-monitor.show-connect-dialog', server);
                                     } else {
                                         status(`Iniciando monitoramento: ${server.name}`);
                                         toggleServerToMonitor(monitorItem.serverItem);
@@ -76,7 +78,6 @@ export class ServerCommands {
                                 }).catch((reason) => {
                                     if (reason['code'] === 4081) {
                                         status(`Solicitando credencias: ${server.name}`);
-                                        ServerCommands.openConnectDialog(server);
                                     }
                                 });
                         } else {
