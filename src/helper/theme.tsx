@@ -60,7 +60,7 @@ let darkTheme = createMuiTheme({
   },
   props: {
     MuiInputBase: {},
-    MuiTextField: { variant: "standard" },
+    MuiTextField: { variant: "filled", margin: "normal" },
     MuiToolbar: { variant: "dense" }
   }
 });

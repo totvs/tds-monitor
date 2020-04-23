@@ -32,6 +32,8 @@ export interface IMonitorItem {
   token: string;
   environment: string;
   errors: IError[];
+  username: string;
+  password: string;
 
   initialize(element: any): void;
   isConnected(): boolean;
@@ -42,6 +44,7 @@ export interface IMonitorItem {
   updateProperties(content: any): Promise<boolean>;
   validConnection(): Promise<any>;
   validate(): Promise<void>;
+  authenticate(): Promise<boolean>;
 }
 
 export interface IValidationServer {

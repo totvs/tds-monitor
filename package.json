@@ -117,7 +117,18 @@
           "type": "boolean",
           "default": true,
           "description": "Apresentar a página de boas vindas do TDS Monitor ao iniciar."
-        }
+        },
+        "tdsMonitor.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the language server."
+				}
       }
     },
     "commands": [

@@ -3,6 +3,7 @@ import * as React from "react";
 import { IMonitorItem, Severity } from "../../monitorInterfaces";
 import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
+import Autocomplete from "@material-ui/lab/autocomplete";
 
 import {
   Typography,
@@ -11,7 +12,6 @@ import {
   IconButton,
   SvgIcon,
   MenuItem,
-  InputAdornment,
 } from "@material-ui/core";
 import { ConnectDialogAction, IConnectDialogAction } from "../action";
 import { LockIcon } from "../../helper/monitorIcons";
@@ -35,7 +35,10 @@ let listener: EventListenerOrEventListenerObject | undefined = undefined;
 
 export default function ConnectDialog(props: IConnectDialogProps) {
   const [state, setState] = React.useState<IMonitorItem>(props.monitorItem);
-  const [credential, setCredential] = React.useState( { username: "", password: ""});
+  const [credential, setCredential] = React.useState({
+    username: "",
+    password: "",
+  });
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
@@ -45,6 +48,14 @@ export default function ConnectDialog(props: IConnectDialogProps) {
         case ConnectDialogAction.UpdateWeb: {
           const data = { ...state, ...message.data };
           setState(data);
+          break;
+        }
+        case ConnectDialogAction.Close: {
+          let command: IConnectDialogAction = {
+            action: ConnectDialogAction.Close,
+            content: event.data,
+          };
+          props.vscode.postMessage(command);
           break;
         }
         default:
@@ -57,16 +68,26 @@ export default function ConnectDialog(props: IConnectDialogProps) {
     window.addEventListener("message", listener);
   }
 
-   const updateModel = (data: any) => {
-     let command: IConnectDialogAction = {
-       action: ConnectDialogAction.UpdateModel,
-       content: data,
-     };
+  const updateModel = (data: any) => {
+    console.log(">>> updateModel");
+    console.log(data);
 
-     props.vscode.postMessage(command);
-   };
+    if (sendControl !== undefined) {
+      clearTimeout(sendControl);
+      sendControl = undefined;
+    }
 
-   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let command: IConnectDialogAction = {
+      action: ConnectDialogAction.UpdateModel,
+      content: data,
+    };
+
+    props.vscode.postMessage(command);
+  };
+
+  let sendControl: NodeJS.Timeout | undefined = undefined;
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
     const name = target.name;
     const value =
@@ -77,51 +98,60 @@ export default function ConnectDialog(props: IConnectDialogProps) {
         : target.type === "number"
         ? parseInt(target.value)
         : target.value;
+
+    console.log(event);
+
     const oldValue = credential[name];
 
     if (value !== oldValue) {
       const data = { ...credential, [name]: value };
 
       setCredential(data);
-      updateModel(data);
+      if (sendControl !== undefined) {
+        clearTimeout(sendControl);
+        sendControl = undefined;
+      }
+      sendControl = setTimeout(updateModel, 1500, data);
     }
   };
 
-   const getError = (
-     target: string,
-     noErrorMessage: string
-   ): string => {
-     let error = state.errors.find((err) => {
-       if (
-         err.severity === Severity.ERROR &&
-         (target === undefined || err.id === target)
-       ) {
-         return err;
-       }
+  const getError = (target: string, noErrorMessage: string): string => {
+    let error = state.errors.find((err) => {
+      if (
+        err.severity === Severity.ERROR &&
+        (target === undefined || err.id === target)
+      ) {
+        return err;
+      }
 
-       return undefined;
-     });
+      return undefined;
+    });
 
-     return error ? error.message : noErrorMessage;
-   };
+    return error ? error.message : noErrorMessage;
+  };
 
-   const isError = (target?: string): boolean => {
-
+  const isError = (target?: string): boolean => {
     return !(getError(target, "_no_error_") === "_no_error_");
   };
 
   const serverTypes = [
     { label: "Protheus", value: "protheus" },
     { label: "Logix", value: "logix" },
+    { label: "Protheus", value: "totvs_server_protheus" },
+    { label: "Logix", value: "totvs_server_logix" },
   ];
 
   const folders = [{ label: "<servidores>", value: "/" }];
+  const environments = [];
+  state.environments.forEach((value, index) => {
+    environments.push({ label: value, value: value });
+  });
 
-  const isSSL = state.secure;
+  const secureIndicator = state.secure ? { startAdorment: <LockIcon /> } : {};
 
   return (
-    <React.Fragment>
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <React.Fragment>
         <MonitorTheme>
           <Toolbar>
             <IconButton edge="start" color="inherit" aria-label="menu" disabled>
@@ -132,12 +162,42 @@ export default function ConnectDialog(props: IConnectDialogProps) {
             </Typography>
           </Toolbar>
           <React.Fragment>
+            <Autocomplete
+              id="environment"
+              options={environments}
+              getOptionLabel={(option) => option.title}
+              value={state.environment}
+              onInputChange={handleChange}
+              renderInput={(params) => (
+                <TextField {...params} label="Ambiente" />
+              )}
+              freeSolo
+            />
+            <TextField
+              name="username"
+              label="Usuário"
+              value={credential.username}
+              error={isError("username")}
+              helperText={getError("port", "Usuário e/ou senha inválidos.")}
+              onChange={handleChange}
+            />
+            <TextField
+              name="password"
+              label="Senha"
+              value={credential.password}
+              type="password"
+              error={isError("password")}
+              helperText={getError("port", "Usuário e/ou senha inválidos.")}
+              onChange={handleChange}
+            />
+
             <TextField
               name="parent"
               select
               label="Destino"
               value={state.parent}
               disabled
+              fullWidth
             >
               {folders.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -152,6 +212,7 @@ export default function ConnectDialog(props: IConnectDialogProps) {
               label="Tipo"
               value={state.type}
               disabled
+              fullWidth
             >
               {serverTypes.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -160,22 +221,21 @@ export default function ConnectDialog(props: IConnectDialogProps) {
               ))}
             </TextField>
 
-            <TextField name="name" label="Nome" value={state.name} disabled />
+            <TextField
+              name="name"
+              label="Nome"
+              fullWidth
+              value={state.name}
+              disabled
+            />
             <TextField
               type="uri"
               name="address"
               label="Endereço"
               value={state.address}
               disabled
-              inputProps={{
-                ...(isSSL && (
-                  <React.Fragment>
-                    <InputAdornment position="start">
-                      <LockIcon />
-                    </InputAdornment>
-                  </React.Fragment>
-                )),
-              }}
+              fullWidth
+              inputProps={secureIndicator}
             />
             <TextField
               name="port"
@@ -190,30 +250,9 @@ export default function ConnectDialog(props: IConnectDialogProps) {
               value={state.buildVersion}
               disabled
             />
-            <TextField
-              name="username"
-              label="Usuário"
-              value={credential.username}
-              error={isError("username")}
-              helperText={getError("port",
-                "Usuário e/ou senha inválidos."
-              )}
-              onChange={handleChange}
-            />
-            <TextField
-              name="password"
-              label="Senha"
-              value={credential.password}
-              type="password"
-              error={isError("password")}
-              helperText={getError("port",
-                "Usuário e/ou senha inválidos."
-              )}
-              onChange={handleChange}
-            />
           </React.Fragment>
         </MonitorTheme>
-      </ErrorBoundary>
-    </React.Fragment>
+      </React.Fragment>
+    </ErrorBoundary>
   );
 }

@@ -1,5 +1,5 @@
 import { LanguageClient } from "vscode-languageclient";
-import { IValidationServer, IKeyInfo, IMonitorItem } from "../monitorInterfaces";
+import { IValidationServer } from "../monitorInterfaces";
 
 export class MonitorLanguageClient extends LanguageClient {
   _isRunning: boolean = false;
@@ -39,11 +39,11 @@ export class MonitorLanguageClient extends LanguageClient {
     return request;
   }
 
-  public connect(type: number, id: string, name: string, address: string, port: number, environment: string, buildVersion: string, secure: boolean) {
+  public connect(connType: number, type: number, id: string, name: string, address: string, port: number, environment: string, buildVersion: string, secure: boolean) {
     const request = super
       .sendRequest('$totvsserver/connect', {
         connectionInfo: {
-          connType: 1,
+          connType: connType,
           serverName: name,
           identification: id,
           serverType: type,
@@ -90,10 +90,7 @@ export class MonitorLanguageClient extends LanguageClient {
         connectionToken: string;
       }) => {
         let token: string = value.connectionToken;
-        if (token) {
-          return true;
-        }
-        return false;
+        return token;
       }, (err) => {
         throw err;
       });
@@ -143,7 +140,7 @@ export class MonitorLanguageClient extends LanguageClient {
     return request;
   }
 
-  public _getId(): Promise<string> {
+  public getId(): Promise<string> {
     const request = super.sendRequest("$totvsserver/getId").then(
       (response: any) => {
         if (response.id) {
@@ -151,47 +148,6 @@ export class MonitorLanguageClient extends LanguageClient {
         }
 
         return "";
-      },
-      err => {
-        super.error(err.message, err);
-        throw err;
-      }
-    );
-
-    return request;
-  }
-
-  public _validKey(keyInfo: IKeyInfo): Promise<any> {
-    const request = this.sendRequest("$totvsserver/validKey", {
-      keyInfo: {
-        id: keyInfo.id,
-        issued: keyInfo.issued,
-        expiry: keyInfo.expire,
-        canOverride: keyInfo.canOverride,
-        token: keyInfo.token
-      }
-    }).then(
-      (response: any) => {
-        return response;
-      },
-      err => {
-        super.error(err.message, err);
-        throw err;
-      }
-    );
-
-    return request;
-  }
-
-  public _authenticate(
-    server: IMonitorItem,
-    environment: string,
-    username: string,
-    password: string
-  ): Promise<string> {
-    const request = this.sendRequest("$totvsserver/authentication", {}).then(
-      (response: any) => {
-        return response.content;
       },
       err => {
         super.error(err.message, err);

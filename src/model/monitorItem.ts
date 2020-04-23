@@ -24,10 +24,11 @@ export class MonitorItem implements IMonitorItem {
 	token: string = "";
 	environment: string = "";
 	errors: IError[] = [];
-
-	reconnectToken: string;
-	needAuthentication: any;
-	user: string;
+	reconnectToken: string = "";
+	needAuthentication: boolean = false;
+	username: string = "";
+	password: string = "";
+	authenticationToken: string = "";
 
 	public initialize(content: any): boolean { //JSON format
 		let needUpdate = false;
@@ -154,7 +155,7 @@ export class MonitorItem implements IMonitorItem {
 			(this.type === "protheus") ? 1 : 2;
 
 		const request = await lsc
-			.connect(type, this.id, this.name, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
+			.connect(13, type, this.id, this.name, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
 			.then((value: any) => {
 				this.token = value.token;
 				this.needAuthentication = value.needAuthentication;
@@ -179,7 +180,8 @@ export class MonitorItem implements IMonitorItem {
 			}) => {
 				this.token = value.connectionToken;
 				this.environment = value.environment;
-				this.user = value.user;
+				this.username = value.user;
+
 				return true;
 			}, (reason) => {
 				throw reason;
@@ -198,6 +200,22 @@ export class MonitorItem implements IMonitorItem {
 				this.secure = value.secure;
 				return true;
 			}, (reason) => {
+				throw reason;
+			});
+
+		return request;
+	}
+
+	public async authenticate(): Promise<boolean> {
+		const lsc = await getLanguageClient();
+
+		const request = await lsc
+			.authenticate(this.token, this.environment, this.username, this.password)
+			.then((value) => {
+				this.authenticationToken = value;
+				return true;
+			}, (reason) => {
+				this.authenticationToken = "";
 				throw reason;
 			});
 

@@ -35,8 +35,8 @@ class ConnectDialogLoader {
         }
       );
       this._panel.iconPath = {
-        light: vscode.Uri.parse(path.join("file:///", __filename, '..', '..',  '..', 'resources', 'light', 'lock.svg')),
-        dark: vscode.Uri.parse(path.join("file:///", __filename, '..', '..',  '..', 'resources', 'dark', 'lock.svg'))
+        light: vscode.Uri.parse(path.join("file:///", __filename, '..', '..', '..', 'resources', 'light', 'lock.svg')),
+        dark: vscode.Uri.parse(path.join("file:///", __filename, '..', '..', '..', 'resources', 'dark', 'lock.svg'))
       };
       this._panel.webview.html = this.getWebviewContent(newServer);
 
@@ -70,21 +70,21 @@ class ConnectDialogLoader {
     let needUpdate: boolean = false;
 
     const p = this._server.updateProperties(content);
-    p.then(async () => {
-      if (this._server.errors.length === 0) {
-        if (this._server.buildVersion === "" && this._server.address !== "") {
-          this._server.validConnection().then((result) => {
-            this._server.buildVersion = result.buildVersion;
-            this._server.secure = result.secure;
-          }).finally(() => {
-            this.updatePanel();
+    p.then((update) => {
+      needUpdate = update;
+      if ((needUpdate)) {
+        if (this._server.username !== "") {
+          this._server.authenticate().then((result) => {
+            if (result) {
+              vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.")
+              needUpdate =false;
+              this.closePanel();
+            }
           });
         }
       }
-    });
-    p.then((update) => {
-      needUpdate = update;
     }).catch((r) => {
+      vscode.window.showErrorMessage(r);
       console.log(r);
     }).finally(() => {
       if (needUpdate) {
@@ -137,4 +137,12 @@ class ConnectDialogLoader {
       data: this._server
     });
   }
+
+  private closePanel(): void {
+    this._panel?.webview.postMessage({
+      command: ConnectDialogAction.Close,
+      data: this._server
+    });
+  }
+
 }
