@@ -208,20 +208,26 @@ export class MonitorItem implements IMonitorItem {
 
 	public async authenticate(): Promise<boolean> {
 		const lsc = await getLanguageClient();
+		this.authenticationToken = "";
+		this.errors = [];
 
-		const request = await lsc
+		const request = lsc
 			.authenticate(this.token, this.environment, this.username, this.password)
 			.then((value) => {
 				this.authenticationToken = value;
-				return true;
-			}, (reason) => {
-				this.authenticationToken = "";
-				throw reason;
+				return (value.length > 0);
+			})
+			.finally(() => {
+				if (this.authenticationToken === "") {
+					this.errors.push(createError(Severity.ERROR, "username", "Credenciais inválidas"));
+					this.errors.push(createError(Severity.ERROR, "password", "Credenciais inválidas"));
+				}
+
+				return (this.errors.length === 0);
 			});
 
 		return request;
 	}
-
 }
 
 export class TreeMonitorItem extends vscode.TreeItem {
@@ -251,9 +257,9 @@ export class TreeMonitorItem extends vscode.TreeItem {
 	}
 
 	iconPath = {
-		light: path.join(__filename, '..', '..',  '..', 'resources', 'light',
+		light: path.join(__filename, '..', '..', '..', 'resources', 'light',
 			false ? 'monitor.connected.svg' : 'monitor.svg'),
-		dark: path.join(__filename, '..', '..',  '..', 'resources', 'dark', 'monitor.svg')
+		dark: path.join(__filename, '..', '..', '..', 'resources', 'dark', 'monitor.svg')
 	};
 
 

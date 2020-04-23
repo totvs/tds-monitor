@@ -6,6 +6,6 @@ export interface IConnectDialogAction {
 export enum ConnectDialogAction {
   Close,
   UpdateModel,
-  SaveAndClose,
-  UpdateWeb
+  UpdateWeb,
+  Authenticate
 }

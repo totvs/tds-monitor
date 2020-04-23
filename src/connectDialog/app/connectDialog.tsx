@@ -4,7 +4,8 @@ import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
 import AddIcon from "@material-ui/icons/Add";
 import LockIcon from "@material-ui/icons/Lock";
-import Keyboard from "@material-ui/icons/Keyboard";
+import KeyboardIcon from "@material-ui/icons/Keyboard";
+import CheckIcon from "@material-ui/icons/Check";
 
 import {
   Typography,
@@ -14,6 +15,9 @@ import {
   SvgIcon,
   MenuItem,
   InputAdornment,
+  Button,
+  CircularProgress,
+  Fade,
 } from "@material-ui/core";
 import { ConnectDialogAction, IConnectDialogAction } from "../action";
 
@@ -41,6 +45,15 @@ export default function ConnectDialog(props: IConnectDialogProps) {
     password: "",
   });
   const [isAddEnvironment, setAddEnvironment] = React.useState(false);
+  const [isAuthenticating, setAuthenticating] = React.useState(false);
+  const timerRef = React.useRef<number>();
+
+  React.useEffect(
+    () => () => {
+      clearTimeout(timerRef.current);
+    },
+    []
+  );
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
@@ -50,6 +63,7 @@ export default function ConnectDialog(props: IConnectDialogProps) {
         case ConnectDialogAction.UpdateWeb: {
           const data = { ...state, ...message.data };
           setState(data);
+          setAuthenticating(false);
           break;
         }
         case ConnectDialogAction.Close: {
@@ -71,17 +85,6 @@ export default function ConnectDialog(props: IConnectDialogProps) {
   }
 
   const updateModel = (data: any) => {
-    //clearInterval(sendControl);
-    sendControl = undefined;
-
-    console.log(">>> updateModel");
-    console.log(data);
-
-    if (sendControl !== undefined) {
-      //clearTimeout(sendControl);
-      sendControl = undefined;
-    }
-
     let command: IConnectDialogAction = {
       action: ConnectDialogAction.UpdateModel,
       content: data,
@@ -90,7 +93,16 @@ export default function ConnectDialog(props: IConnectDialogProps) {
     props.vscode.postMessage(command);
   };
 
-  let sendControl: NodeJS.Timeout | undefined = undefined;
+  const handleButton = (event: React.MouseEvent<HTMLInputElement>) => {
+    setAuthenticating(true);
+
+    let command: IConnectDialogAction = {
+      action: ConnectDialogAction.Authenticate,
+      content: state,
+    };
+
+    props.vscode.postMessage(command);
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
@@ -104,23 +116,13 @@ export default function ConnectDialog(props: IConnectDialogProps) {
         ? parseInt(target.value)
         : target.value;
 
-    console.log(event);
-
-    const oldValue = credential[name];
+        const oldValue = credential[name];
 
     if (value !== oldValue) {
       const data = { ...credential, [name]: value };
 
       setCredential(data);
-      if (name === "environment") {
-        updateModel(data);
-      } else {
-        if (sendControl !== undefined) {
-          //clearInterval(sendControl);
-          sendControl = undefined;
-        }
-        //sendControl = setInterval(updateModel, 1500, data);
-      }
+      updateModel(data);
     }
   };
 
@@ -190,6 +192,7 @@ export default function ConnectDialog(props: IConnectDialogProps) {
                 label="Ambiente"
                 value={state.environment}
                 fullWidth
+                disabled={isAuthenticating}
                 onChange={handleChange}
                 helperText={"Selecione o ambiente alvo."}
                 InputProps={{
@@ -212,12 +215,13 @@ export default function ConnectDialog(props: IConnectDialogProps) {
                 label="Ambiente"
                 value={state.environment}
                 fullWidth
+                disabled={isAuthenticating}
                 onChange={handleChange}
                 helperText={"Informe o ambiente alvo."}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end" onClick={toggleEnvinroment}>
-                      <Keyboard />
+                      <KeyboardIcon />
                     </InputAdornment>
                   ),
                 }}
@@ -228,18 +232,46 @@ export default function ConnectDialog(props: IConnectDialogProps) {
               label="Usuário"
               value={credential.username}
               error={isError("username")}
-              helperText={getError("username", "Usuário e/ou senha inválidos.")}
+              helperText={getError("username", "Usuário do Protheus")}
               onChange={handleChange}
+              disabled={isAuthenticating}
             />
+
             <TextField
               name="password"
               label="Senha"
               value={credential.password}
               type="password"
               error={isError("password")}
-              helperText={getError("password", "Usuário e/ou senha inválidos.")}
+              helperText={getError("password", "Senha de acesso")}
               onChange={handleChange}
+              disabled={isAuthenticating}
             />
+
+            <Button
+              style={{ marginTop: 20 }}
+              size="large"
+              disabled={isError("username") || isAuthenticating}
+              onClick={handleButton}
+              startIcon={<CheckIcon />}
+            >
+              {isAuthenticating ? (
+                <React.Fragment>
+                  <Typography>Autenticando... </Typography>
+                  <Fade
+                    in={true}
+                    style={{
+                      transitionDelay: "800ms",
+                    }}
+                    unmountOnExit
+                  >
+                    <CircularProgress />
+                  </Fade>
+                </React.Fragment>
+              ) : (
+                <Typography>Autenticar</Typography>
+              )}
+            </Button>
 
             <TextField
               name="parent"

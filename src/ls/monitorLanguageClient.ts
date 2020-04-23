@@ -92,7 +92,7 @@ export class MonitorLanguageClient extends LanguageClient {
         let token: string = value.connectionToken;
         return token;
       }, (err) => {
-        throw err;
+        return "";
       });
 
     return request;

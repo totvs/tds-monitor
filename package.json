@@ -196,11 +196,6 @@
       "explorer/context": [],
       "view/item/context": [
         {
-          "command": "tds-monitor.show-connect-dialog",
-          "when": "view == tds_monitor && viewItem == monitorItem",
-          "group": "AAtotvsMonitor@1"
-        },
-        {
           "command": "tds-monitor.toggle",
           "when": "view == tds_monitor && viewItem == monitorItem",
           "group": "AAtotvsMonitor@1"

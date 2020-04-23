@@ -3,6 +3,7 @@ import * as path from "path";
 
 import { IMonitorItem } from "../monitorInterfaces";
 import { IConnectDialogAction, ConnectDialogAction } from "./action";
+import { toggleServerToMonitor } from "../monitor/createMonitorLoader";
 
 export function connectDialogLoader(server: IMonitorItem) {
   // tslint:disable-next-line: no-unused-expression
@@ -56,14 +57,34 @@ class ConnectDialogLoader {
       case ConnectDialogAction.UpdateModel:
         this.updateModel(command.content);
         break;
+      case ConnectDialogAction.Authenticate:
+        this.authenticate(command.content);
+        break;
       case ConnectDialogAction.Close:
         this._panel.dispose();
         break;
-      case ConnectDialogAction.SaveAndClose:
-
-        this._panel.dispose();
-        break;
     }
+  }
+
+  private authenticate(content: any) {
+    const p = this._server.updateProperties(content);
+    p.then((update) => {
+      this._server.authenticate()
+        .then((result) => {
+          if (result) {
+            vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.");
+            toggleServerToMonitor(this._server);
+            this.closePanel();
+          } else {
+            this.updatePanel();
+          }
+        }, (reason: any) => {
+          this.updatePanel();
+        });
+    }).catch((r) => {
+      vscode.window.showErrorMessage(r);
+      this.updatePanel();
+    });
   }
 
   private updateModel(content: any) {
@@ -72,17 +93,6 @@ class ConnectDialogLoader {
     const p = this._server.updateProperties(content);
     p.then((update) => {
       needUpdate = update;
-      if ((needUpdate)) {
-        if (this._server.username !== "") {
-          this._server.authenticate().then((result) => {
-            if (result) {
-              vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.");
-              needUpdate = false;
-              this.closePanel();
-            }
-          });
-        }
-      }
     }).catch((r) => {
       vscode.window.showErrorMessage(r);
       console.log(r);
