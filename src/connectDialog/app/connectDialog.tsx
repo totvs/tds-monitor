@@ -1,9 +1,10 @@
 import * as React from "react";
-
 import { IMonitorItem, Severity } from "../../monitorInterfaces";
 import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
-import Autocomplete from "@material-ui/lab/autocomplete";
+import AddIcon from "@material-ui/icons/Add";
+import LockIcon from "@material-ui/icons/Lock";
+import Keyboard from "@material-ui/icons/Keyboard";
 
 import {
   Typography,
@@ -12,9 +13,9 @@ import {
   IconButton,
   SvgIcon,
   MenuItem,
+  InputAdornment,
 } from "@material-ui/core";
 import { ConnectDialogAction, IConnectDialogAction } from "../action";
-import { LockIcon } from "../../helper/monitorIcons";
 
 interface IConnectDialogProps {
   vscode: any;
@@ -39,6 +40,7 @@ export default function ConnectDialog(props: IConnectDialogProps) {
     username: "",
     password: "",
   });
+  const [isAddEnvironment, setAddEnvironment] = React.useState(false);
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
@@ -69,11 +71,14 @@ export default function ConnectDialog(props: IConnectDialogProps) {
   }
 
   const updateModel = (data: any) => {
+    //clearInterval(sendControl);
+    sendControl = undefined;
+
     console.log(">>> updateModel");
     console.log(data);
 
     if (sendControl !== undefined) {
-      clearTimeout(sendControl);
+      //clearTimeout(sendControl);
       sendControl = undefined;
     }
 
@@ -107,11 +112,15 @@ export default function ConnectDialog(props: IConnectDialogProps) {
       const data = { ...credential, [name]: value };
 
       setCredential(data);
-      if (sendControl !== undefined) {
-        clearTimeout(sendControl);
-        sendControl = undefined;
+      if (name === "environment") {
+        updateModel(data);
+      } else {
+        if (sendControl !== undefined) {
+          //clearInterval(sendControl);
+          sendControl = undefined;
+        }
+        //sendControl = setInterval(updateModel, 1500, data);
       }
-      sendControl = setTimeout(updateModel, 1500, data);
     }
   };
 
@@ -147,7 +156,19 @@ export default function ConnectDialog(props: IConnectDialogProps) {
     environments.push({ label: value, value: value });
   });
 
-  const secureIndicator = state.secure ? { startAdorment: <LockIcon /> } : {};
+  const secureIndicator = state.secure
+    ? {
+        startAdorment: (
+          <InputAdornment position="start">
+            <LockIcon />
+          </InputAdornment>
+        ),
+      }
+    : {};
+
+  const toggleEnvinroment = () => {
+    setAddEnvironment(!isAddEnvironment);
+  };
 
   return (
     <ErrorBoundary>
@@ -162,23 +183,52 @@ export default function ConnectDialog(props: IConnectDialogProps) {
             </Typography>
           </Toolbar>
           <React.Fragment>
-            <Autocomplete
-              id="environment"
-              options={environments}
-              getOptionLabel={(option) => option.title}
-              value={state.environment}
-              onInputChange={handleChange}
-              renderInput={(params) => (
-                <TextField {...params} label="Ambiente" />
-              )}
-              freeSolo
-            />
+            {!isAddEnvironment ? (
+              <TextField
+                name="environment"
+                select
+                label="Ambiente"
+                value={state.environment}
+                fullWidth
+                onChange={handleChange}
+                helperText={"Selecione o ambiente alvo."}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end" onClick={toggleEnvinroment}>
+                      <AddIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              >
+                {environments.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : (
+              <TextField
+                name="environment"
+                label="Ambiente"
+                value={state.environment}
+                fullWidth
+                onChange={handleChange}
+                helperText={"Informe o ambiente alvo."}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end" onClick={toggleEnvinroment}>
+                      <Keyboard />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
             <TextField
               name="username"
               label="Usuário"
               value={credential.username}
               error={isError("username")}
-              helperText={getError("port", "Usuário e/ou senha inválidos.")}
+              helperText={getError("username", "Usuário e/ou senha inválidos.")}
               onChange={handleChange}
             />
             <TextField
@@ -187,7 +237,7 @@ export default function ConnectDialog(props: IConnectDialogProps) {
               value={credential.password}
               type="password"
               error={isError("password")}
-              helperText={getError("port", "Usuário e/ou senha inválidos.")}
+              helperText={getError("password", "Usuário e/ou senha inválidos.")}
               onChange={handleChange}
             />
 

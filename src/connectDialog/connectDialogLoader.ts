@@ -23,7 +23,7 @@ class ConnectDialogLoader {
     if (newServer) {
       this._panel = vscode.window.createWebviewPanel(
         "ConnectDialogLoader",
-        "Identifique-se",
+        "Identifique-se: " + newServer.name,
         vscode.ViewColumn.One,
         {
           enableScripts: true,
@@ -76,8 +76,8 @@ class ConnectDialogLoader {
         if (this._server.username !== "") {
           this._server.authenticate().then((result) => {
             if (result) {
-              vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.")
-              needUpdate =false;
+              vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.");
+              needUpdate = false;
               this.closePanel();
             }
           });
