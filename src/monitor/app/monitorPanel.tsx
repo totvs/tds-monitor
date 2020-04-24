@@ -203,6 +203,8 @@ export default function MonitorPanel(props: IMonitorPanel) {
   const [selected, setSelected] = React.useState<IConnectionData[]>([]);
   const [, setSpeed] = React.useState(0);
   const [rows, setRows] = React.useState([]);
+  const [subtitle, setSubtitle] = React.useState(props.targetServer.length);
+
   const [openDialog, setOpenDialog] = React.useState({
     lockServer: false,
     unlockServer: false,
@@ -234,6 +236,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
           const result = message.data as IMonitorUser[];
 
           setRows(result);
+          setSubtitle(result.length);
           setLoading(false);
           break;
         }
@@ -470,7 +473,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
           title={
             <Title
               title={"Monitor"}
-              subtitle={"Monitorados: " + props.targetServer.length}
+              subtitle={"Monitorados: " + subtitle}
             />
           }
           options={{
@@ -479,6 +482,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
             filtering: filtering,
             exportButton: false,
             exportCsv: () => {},
+            padding: "dense"
           }}
           onSelectionChange={(rows) => setSelected(rows)}
           onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
@@ -486,7 +490,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
         />
       </Paper>
 
-      <Backdrop open={loading}>
+      <Backdrop open={loading} style={{"zIndex": 10000}}>
         <Fade
           in={loading}
           style={{

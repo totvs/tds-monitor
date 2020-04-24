@@ -29,7 +29,7 @@ export class MonitorLoader {
   private _disposables: vscode.Disposable[] = [];
   private _isDisposed: boolean = false;
   private _serverList: IMonitorItem[] = Array<IMonitorItem>();
-  private _speed: number = 0;
+  private _speed: number = 10000;
   private _lock: boolean = false;
 
   constructor() {
@@ -81,11 +81,11 @@ export class MonitorLoader {
   }
 
   public set speed(v: number) {
-    this._speed = v;
+    this._speed = v * 1000;
 
     this._panel.webview.postMessage({
       command: MonitorPanelAction.SetSpeedUpdate,
-      data: this._speed
+      data: v
     });
 
   }
@@ -110,7 +110,7 @@ export class MonitorLoader {
 
     this._serverList = Array<IMonitorItem>();
     this._serverList.push(serverItem);
-    this.updateUsers();
+    this.updateUsers(true);
   }
 
   private async setLockServer(server: IMonitorItem, lock: boolean): Promise<boolean> {
@@ -221,8 +221,8 @@ export class MonitorLoader {
         break;
       }
       case MonitorPanelAction.UpdateUsers: {
-        this.updateUsers();
-        this.speed = this._speed; //força a ligar o intervalo (setInterval), se necessário
+        this.speed = this._speed;
+        this.updateUsers(true);
 
         break;
       }
@@ -243,7 +243,7 @@ export class MonitorLoader {
           this.killConnection(command.content.server, command.content.recipients);
         }
 
-        this.updateUsers();
+        this.updateUsers(false);
 
         break;
       }
@@ -266,7 +266,7 @@ export class MonitorLoader {
     }
   }
 
-  private updateUsers() {
+  public updateUsers(scheduler: boolean) {
     let promises = [];
     let result = [];
 
@@ -289,8 +289,17 @@ export class MonitorLoader {
           data: users
         });
 
+        return users;
+      }).then((users) => {
         if (this.writeLogServer) {
           this.doWriteLogServer(users);
+        }
+        return users;
+      }).finally(() => {
+        if (scheduler) {
+          if (this._speed > 0) {
+            setTimeout(updateScheduledUsers, this._speed, this, true);
+          }
         }
       });
   }
@@ -337,4 +346,9 @@ export class MonitorLoader {
     </body>
     </html>`;
   }
+}
+
+function updateScheduledUsers(monitor: MonitorLoader, scheduler: boolean) {
+  vscode.window.showInformationMessage("Atualizando monitor.");
+  monitor.updateUsers(scheduler);
 }

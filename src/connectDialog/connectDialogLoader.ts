@@ -79,7 +79,7 @@ class ConnectDialogLoader {
       this._server.authenticate()
         .then((result) => {
           if (result) {
-            vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.");
+            vscode.window.showInformationMessage("Autenticação de usuário efetuada.");
             vscode.commands.executeCommand('tds-monitor.add-server-monitor', this._server);
             this._panel.dispose();
           } else {
