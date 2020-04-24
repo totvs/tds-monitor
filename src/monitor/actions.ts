@@ -1,9 +1,9 @@
-export interface IMonitorViewAction {
-  action: MonitorViewAction;
+export interface IMonitorPanelAction {
+  action: MonitorPanelAction;
   content: any;
 }
 
-export enum MonitorViewAction {
+export enum MonitorPanelAction {
   ToggleServer,
   SetSpeedUpdate,
   UpdateUsers,

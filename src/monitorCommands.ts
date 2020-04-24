@@ -3,7 +3,7 @@ import { serverManager } from './model/monitorManager';
 import { TreeMonitorItem } from './model/monitorItem';
 import * as vscode from 'vscode';
 import { addServerLoader } from './addServer/addServerLoader';
-import { toggleServerToMonitor } from './monitor/createMonitorLoader';
+import { toggleServerToMonitor } from './monitor/monitorLoader';
 import { connectDialogLoader } from './connectDialog/connectDialogLoader';
 
 export class ServerCommands {
@@ -13,9 +13,10 @@ export class ServerCommands {
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.delete', (item: TreeMonitorItem) => { ServerCommands.deleteMonitor(item); }));
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.toggle', (item: TreeMonitorItem) => { ServerCommands.toggleMonitor(item.serverItem); }));
+        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.add-server-monitor', (serverItem: IMonitorItem) => { ServerCommands.toggleMonitor(serverItem); }));
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.open.configuration', () => ServerCommands.openConfiguration(context)));
-        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.show-connect-dialog', async (serverItem: IMonitorItem) => await ServerCommands.openConnectDialog(serverItem)));
+        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.show-connect-dialog', async (serverItem: IMonitorItem) => ServerCommands.openConnectDialog(serverItem)));
 
         //Comando para renomear item da visão de monitor.
         //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.rename', (serverItem: MonitorItem) => renameMonitor(serverItem)));
@@ -63,7 +64,7 @@ export class ServerCommands {
                                     if (value && server.needAuthentication) {
                                         vscode.commands.executeCommand('tds-monitor.show-connect-dialog', server);
                                     } else {
-                                        toggleServerToMonitor(server);
+                                        vscode.commands.executeCommand('tds-monitor.add-server-monitor', server);
                                     }
                                 }).catch((reason) => {
                                 });

@@ -1,3 +1,3 @@
-import { CreateMonitorLoader } from './createMonitorLoader';
+import { MonitorLoader } from './monitorLoader';
 
- export { CreateMonitorLoader as CreateMonitorLoader };
+ export { MonitorLoader as CreateMonitorLoader };

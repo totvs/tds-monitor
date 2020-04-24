@@ -4,7 +4,7 @@ import {
   createStyles,
   lighten,
   makeStyles,
-  Theme
+  Theme,
 } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
@@ -15,9 +15,9 @@ import {
   GroupingIcon,
   StopIcon,
   WriteLogIcon,
-  DisconnectIcon
+  DisconnectIcon,
 } from "../../helper/monitorIcons";
-import { MonitorViewAction, IMonitorViewAction } from "../actions";
+import { MonitorPanelAction, IMonitorPanelAction } from "../actions";
 import IMonitorUser from "../monitorUser";
 import SendMessageDialog from "./sendMessageDialog";
 import AddBox from "@material-ui/icons/AddBox";
@@ -38,12 +38,13 @@ import ViewColumn from "@material-ui/icons/ViewColumn";
 import {
   HeadCell,
   IConnectionData,
-  cellDefaultStyle
+  cellDefaultStyle,
 } from "./monitorInterface";
 import StopServerDialog from "./stopServerDialog";
 import LockServerDialog from "./lockServerDialog";
 import UnlockServerDialog from "./unlockServerDialog";
 import DisconnectUserDialog from "./disconnectUserDialog";
+import SpeedButton from "./speedButton";
 
 const tableIcons = {
   Add: forwardRef<SVGSVGElement>((props, ref) => (
@@ -96,7 +97,7 @@ const tableIcons = {
   )),
   ViewColumn: forwardRef<SVGSVGElement>((props, ref) => (
     <ViewColumn {...props} ref={ref} />
-  ))
+  )),
 };
 
 const headCells: HeadCell[] = [
@@ -115,45 +116,45 @@ const headCells: HeadCell[] = [
   { field: "memUsed", title: "Memória em Uso", ...cellDefaultStyle },
   { field: "sid", title: "SID", ...cellDefaultStyle },
   { field: "ctreeTaskId", title: "CTree ID", ...cellDefaultStyle },
-  { field: "clientType", title: "Tipo Conexão", ...cellDefaultStyle }
+  { field: "clientType", title: "Tipo Conexão", ...cellDefaultStyle },
 ];
 
 const useToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       paddingLeft: theme.spacing(1),
-      paddingRight: theme.spacing(1)
+      paddingRight: theme.spacing(1),
     },
     highlight:
       theme.palette.type === "light"
         ? {
             color: theme.palette.secondary.main,
-            backgroundColor: lighten(theme.palette.secondary.light, 0.85)
+            backgroundColor: lighten(theme.palette.secondary.light, 0.85),
           }
         : {
             color: theme.palette.text.primary,
-            backgroundColor: theme.palette.secondary.dark
+            backgroundColor: theme.palette.secondary.dark,
           },
     title: {
       fontSize: "180%",
-      fontWeight: "bold"
+      fontWeight: "bold",
     },
     subtitle: {
-      color: "silver"
+      color: "silver",
     },
     upperCase: {
-      textTransform: "uppercase"
+      textTransform: "uppercase",
     },
     toolbarButtons: {
-      marginLeft: "auto"
+      marginLeft: "auto",
     },
     chips: {
       display: "flex",
-      flexWrap: "wrap"
+      flexWrap: "wrap",
     },
     chip: {
-      margin: 2
-    }
+      margin: 2,
+    },
   })
 );
 
@@ -172,20 +173,9 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 interface IMonitorPanel {
   vscode: any;
   targetServer: any;
-  titles: string[];
-  locked?: boolean;
 }
 
 let listener = undefined;
-
-
-/*
-  <SpeedButton
-    options={speedOptions}
-    callback={handleSpeedButtonChange}
-    value={speeds.indexOf(speed)}
-  />
-*/
 
 interface ITitleProps {
   title: string;
@@ -207,36 +197,49 @@ export default function MonitorPanel(props: IMonitorPanel) {
   const [grouping, setGrouping] = React.useState(false);
   const [filtering, setFiltering] = React.useState(false);
   const [selected, setSelected] = React.useState<IConnectionData[]>([]);
-  const [, setSpeed] = React.useState<number>(0);
-  const [timer, setTimer] = React.useState<number>();
+  const [, setSpeed] = React.useState(0);
   const [rows, setRows] = React.useState([]);
   const [openDialog, setOpenDialog] = React.useState({
     lockServer: false,
     unlockServer: false,
     stopServer: false,
     sendMessage: false,
-    disconnectUser: false
+    disconnectUser: false,
   });
+
+  const [query, setQuery] = React.useState("idle");
+  const timerRef = React.useRef<number>();
+
+  React.useEffect(
+    () => () => {
+      clearInterval(timerRef.current);
+    },
+    []
+  );
+
+  const [, setTargetServer] = React.useState();
+  const [, setTitles] = React.useState([]);
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
       const message = event.data; // The JSON data our extension sent
 
       switch (message.command) {
-        case MonitorViewAction.SetSpeedUpdate: {
-          setSpeed(message.data);
-
-          if (timer) {
-            window.clearInterval(timer);
-          }
-          if (message.data > 0) {
-            setTimer(window.setInterval(updateUsers, message.data * 1000));
-          }
+        case MonitorPanelAction.ToggleServer: {
+          setTargetServer(message.current);
+          setTitles([
+            message.server.name,
+            message.server.address + ":" + message.server.port,
+          ]);
 
           break;
         }
-        case MonitorViewAction.UpdateUsers: {
-          window.clearInterval(timer);
+        case MonitorPanelAction.SetSpeedUpdate: {
+          setSpeed(message.data);
+
+          break;
+        }
+        case MonitorPanelAction.UpdateUsers: {
           const result = message.data as IMonitorUser[];
 
           setRows(result);
@@ -253,21 +256,36 @@ export default function MonitorPanel(props: IMonitorPanel) {
     window.addEventListener("message", listener);
   }
 
-  const updateUsers = () => {
-    let command: IMonitorViewAction = {
-      action: MonitorViewAction.UpdateUsers,
-      content: props.targetServer
-    };
+  const handleSpeedButtonChange = () => {
+    clearTimeout(timerRef.current);
 
-    props.vscode.postMessage(command);
+    if (query !== "idle") {
+      setQuery("idle");
+      return;
+    }
+
+    setQuery("progress");
+    // timerRef.current = setInterval(() => {
+    //   setQuery("success");
+    // }, 2000);
   };
+
+  // const updateUsers = () => {
+  //   let command: IMonitorViewAction = {
+  //     action: MonitorViewAction.UpdateUsers,
+  //     content: props.targetServer,
+  //   };
+
+  //   props.vscode.postMessage(command);
+  // };
 
   if (!props.targetServer) {
     return <Typography>Inicializando...</Typography>;
   }
 
   const handleLockButtonClick = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>  ) => {
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     event.preventDefault();
 
     setOpenDialog({ ...openDialog, lockServer: true });
@@ -277,9 +295,9 @@ export default function MonitorPanel(props: IMonitorPanel) {
     setOpenDialog({ ...openDialog, lockServer: false });
 
     if (confirm) {
-      let command: IMonitorViewAction = {
-        action: MonitorViewAction.LockServer,
-        content: { server: props.targetServer, lock: true }
+      let command: IMonitorPanelAction = {
+        action: MonitorPanelAction.LockServer,
+        content: { server: props.targetServer, lock: true },
       };
       props.vscode.postMessage(command);
     }
@@ -289,16 +307,17 @@ export default function MonitorPanel(props: IMonitorPanel) {
     setOpenDialog({ ...openDialog, unlockServer: true });
 
     if (confirm) {
-      let command: IMonitorViewAction = {
-        action: MonitorViewAction.LockServer,
-        content: { server: props.targetServer, lock: false }
+      let command: IMonitorPanelAction = {
+        action: MonitorPanelAction.LockServer,
+        content: { server: props.targetServer, lock: false },
       };
       props.vscode.postMessage(command);
     }
   };
 
   const handleUnlockButtonClick = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>  ) => {
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     event.preventDefault();
     setOpenDialog({ ...openDialog, unlockServer: false });
   };
@@ -313,16 +332,17 @@ export default function MonitorPanel(props: IMonitorPanel) {
   const doStopServer = (killNow: boolean) => {
     setOpenDialog({ ...openDialog, stopServer: false });
 
-    let command: IMonitorViewAction = {
-      action: MonitorViewAction.StopServer,
-      content: { server: props.targetServer, killNow: killNow }
+    let command: IMonitorPanelAction = {
+      action: MonitorPanelAction.StopServer,
+      content: { server: props.targetServer, killNow: killNow },
     };
 
     props.vscode.postMessage(command);
   };
 
   const handleSendMessageButtonClick = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>  ) => {
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     event.preventDefault();
     setOpenDialog({ ...openDialog, sendMessage: true });
   };
@@ -343,13 +363,13 @@ export default function MonitorPanel(props: IMonitorPanel) {
     setOpenDialog({ ...openDialog, disconnectUser: false });
 
     if (confirmed) {
-      let command: IMonitorViewAction = {
-        action: MonitorViewAction.KillConnection,
+      let command: IMonitorPanelAction = {
+        action: MonitorPanelAction.KillConnection,
         content: {
           server: props.targetServer,
           recipients: recipients,
-          killnow: killNow
-        }
+          killnow: killNow,
+        },
       };
 
       props.vscode.postMessage(command);
@@ -365,13 +385,13 @@ export default function MonitorPanel(props: IMonitorPanel) {
     setOpenDialog({ ...openDialog, sendMessage: false });
 
     if (confirmed) {
-      let command: IMonitorViewAction = {
-        action: MonitorViewAction.SendMessage,
+      let command: IMonitorPanelAction = {
+        action: MonitorPanelAction.SendMessage,
         content: {
           server: props.targetServer,
           recipients: recipients,
-          message: message
-        }
+          message: message,
+        },
       };
 
       props.vscode.postMessage(command);
@@ -379,30 +399,29 @@ export default function MonitorPanel(props: IMonitorPanel) {
   };
 
   const handleWriteLogButtonClick = () => {
-    let command: IMonitorViewAction = {
-      action: MonitorViewAction.ToggleWriteLogServer,
-      content: { server: props.targetServer }
+    let command: IMonitorPanelAction = {
+      action: MonitorPanelAction.ToggleWriteLogServer,
+      content: { server: props.targetServer },
     };
 
     props.vscode.postMessage(command);
   };
 
-
-
   const actions = [];
-  if (!props.locked) {
+  const locked = false;
+  if (!locked) {
     actions.push({
       icon: () => <LockIcon />,
       tooltip: "Lock server",
       isFreeAction: true,
-      onClick: (event: any) => handleLockButtonClick(event)
+      onClick: (event: any) => handleLockButtonClick(event),
     });
   } else {
     actions.push({
       icon: () => <UnlockIcon />,
       tooltip: "Unlock server",
       isFreeAction: true,
-      onClick: (event: any) => handleUnlockButtonClick(event)
+      onClick: (event: any) => handleUnlockButtonClick(event),
     });
   }
 
@@ -410,67 +429,69 @@ export default function MonitorPanel(props: IMonitorPanel) {
     icon: () => <MessageIcon />,
     tooltip: "Send message to all users",
     isFreeAction: true,
-    onClick: (event: any) => handleSendMessageButtonClick(event)
+    onClick: (event: any) => handleSendMessageButtonClick(event),
   });
 
   actions.push({
     icon: () => <MessageIcon />,
     tooltip: "Send message to selected users",
     isFreeAction: false,
-    onClick: (event: any) => handleSendMessageButtonClick(event)
+    onClick: (event: any) => handleSendMessageButtonClick(event),
   });
 
   actions.push({
     icon: () => <DisconnectIcon />,
     tooltip: "Disconnect user",
     isFreeAction: true,
-    onClick: (event: any) => handleDisconnectUserButtonClick(event)
+    onClick: (event: any) => handleDisconnectUserButtonClick(event),
   });
 
   actions.push({
     icon: () => <StopIcon />,
     tooltip: "Stop server",
     isFreeAction: true,
-    onClick: (event: any) => handleStopButtonClick(event)
+    onClick: (event: any) => handleStopButtonClick(event),
   });
 
   actions.push({
     icon: () => <WriteLogIcon />,
     tooltip: "Write log",
     isFreeAction: true,
-    onClick: () => handleWriteLogButtonClick()
+    onClick: () => handleWriteLogButtonClick(),
   });
 
   actions.push({
     icon: () => <GroupingIcon />,
     tooltip: "Grouping on/off",
     isFreeAction: true,
-    onClick: () => setGrouping(!grouping)
+    onClick: () => setGrouping(!grouping),
   });
 
   actions.push({
     icon: () => <FilterList />,
     tooltip: "Filtering on/off",
     isFreeAction: true,
-    onClick: () => setFiltering(!filtering)
+    onClick: () => setFiltering(!filtering),
   });
 
+  const speedOptions: any = ["5", "15", "30", "60"];
+
   return (
-    <div >
+    <div>
       <Paper>
         <MaterialTable
           icons={tableIcons}
           columns={headCells}
           data={rows}
-          title={<Title title={props.titles[0]} subtitle={props.titles[1]} />}
+          title={<Title title={"props.titles[0]"} subtitle={"props.titles[1]"} />}
           options={{
             selection: true,
             grouping: grouping,
             filtering: filtering,
             exportButton: false,
-            exportCsv: () => {}
+            exportCsv: () => {},
           }}
-          onSelectionChange={rows => setSelected(rows)}
+          onSelectionChange={(rows) => setSelected(rows)}
           onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
           actions={actions}
         />
@@ -495,6 +516,12 @@ export default function MonitorPanel(props: IMonitorPanel) {
       <UnlockServerDialog
         open={openDialog.unlockServer}
         onClose={doUnlockServer}
+      />
+
+      <SpeedButton
+        options={speedOptions}
+        callback={handleSpeedButtonChange}
+        value={speedOptions.indexOf(props.targetServer.speed)}
       />
     </div>
   );

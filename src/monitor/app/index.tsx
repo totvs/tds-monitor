@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
-import MonitorView from "./monitorView";
+import MonitorPanel from "./monitorPanel";
 
 declare global {
   interface Window {
@@ -11,8 +10,10 @@ declare global {
 }
 
 const vscode = window.acquireVsCodeApi();
+const targetServer = window.initialData;
+
 ReactDOM.render(
-  <MonitorView  vscode={vscode}/>,
+  <MonitorPanel vscode={vscode} targetServer={targetServer} />,
   document.getElementById("root")
 );
 

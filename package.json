@@ -170,6 +170,11 @@
         }
       },
       {
+        "command": "tds-monitor.add-server-monitor",
+        "title": "Adiciona o servidor na lista para monitoramento",
+        "category": "TDSMonitor"
+      },
+      {
         "command": "tds-monitor.show-connect-dialog",
         "title": "Abrir diálogo para parâmetro de conexão",
         "category": "TDSMonitor"

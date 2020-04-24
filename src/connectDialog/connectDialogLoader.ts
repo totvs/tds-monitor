@@ -3,7 +3,7 @@ import * as path from "path";
 
 import { IMonitorItem } from "../monitorInterfaces";
 import { IConnectDialogAction, ConnectDialogAction } from "./action";
-import { toggleServerToMonitor } from "../monitor/createMonitorLoader";
+import { toggleServerToMonitor } from "../monitor/monitorLoader";
 
 export function connectDialogLoader(server: IMonitorItem) {
   // tslint:disable-next-line: no-unused-expression
@@ -15,6 +15,7 @@ class ConnectDialogLoader {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
   private _server: IMonitorItem;
+  private _isDisposed: boolean = false;
 
   constructor(newServer: IMonitorItem) {
     const ext = vscode.extensions.getExtension("TOTVS.tds-monitor");
@@ -35,6 +36,7 @@ class ConnectDialogLoader {
           ]
         }
       );
+
       this._panel.iconPath = {
         light: vscode.Uri.parse(path.join("file:///", __filename, '..', '..', '..', 'resources', 'light', 'lock.svg')),
         dark: vscode.Uri.parse(path.join("file:///", __filename, '..', '..', '..', 'resources', 'dark', 'lock.svg'))
@@ -48,6 +50,12 @@ class ConnectDialogLoader {
         undefined,
         this._disposables
       );
+    }
+  }
+
+  public reveal() {
+    if (!this._isDisposed) {
+      this._panel.reveal();
     }
   }
 

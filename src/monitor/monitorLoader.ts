@@ -1,27 +1,27 @@
-import { languageClient } from './../extension';
+import { languageClient } from '../extension';
 import * as vscode from "vscode";
 import * as path from "path";
-import { MonitorViewAction, IMonitorViewAction } from "./actions";
+import { MonitorPanelAction, IMonitorPanelAction } from "./actions";
 import { isNullOrUndefined } from "util";
 import IMonitorUser from "./monitorUser";
-import Utils, { SelectServer } from '../utils';
+
 import { IMonitorItem } from '../monitorInterfaces';
 
-let monitorView: CreateMonitorLoader = undefined;
+let monitorLoader: MonitorLoader = undefined;
 
-export function updateMonitorView() {
-  if (isNullOrUndefined(monitorView)) {
-    monitorView = new CreateMonitorLoader();
+export function updateMonitorPanel() {
+  if (isNullOrUndefined(monitorLoader)) {
+    monitorLoader = new MonitorLoader();
   }
 }
 
 export function toggleServerToMonitor(server: IMonitorItem) {
-  updateMonitorView();
+  updateMonitorPanel();
 
-  monitorView.toggleServerToMonitor(server);
+  monitorLoader.toggleServerToMonitor(server);
 }
 
-export class CreateMonitorLoader {
+export class MonitorLoader {
   protected readonly _panel: vscode.WebviewPanel | undefined;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
@@ -30,11 +30,59 @@ export class CreateMonitorLoader {
   private _speed: number = 0;
   private _lock: boolean = false;
 
+  constructor() {
+    const ext = vscode.extensions.getExtension("TOTVS.tds-monitor");
+    this._extensionPath = ext.extensionPath;
+
+    // this._disposables.push(Utils.onDidSelectedServer((newServer: SelectServer) => {
+    //   toggleServerToMonitor(undefined);
+    // }));
+
+    this._panel = vscode.window.createWebviewPanel(
+      "monitorLoader",
+      "Monitor",
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: [
+          vscode.Uri.file(
+            path.join(this._extensionPath, "out", "webpack")
+          )
+        ]
+      }
+    );
+
+    this._panel.iconPath = {
+      light: vscode.Uri.parse(path.join("file:///", __filename, '..', '..', '..', 'resources', 'light', 'lock.svg')),
+      dark: vscode.Uri.parse(path.join("file:///", __filename, '..', '..', '..', 'resources', 'dark', 'lock.svg'))
+    };
+    this._panel.webview.html = this.getWebviewContent(this._serverList);
+
+    this._panel.webview.onDidReceiveMessage(
+      (command: IMonitorPanelAction) => {
+        this.handleMessage(command);
+      },
+      undefined,
+      this._disposables
+    );
+
+    this._panel.onDidDispose((event) => {
+      monitorLoader = undefined;
+      this._isDisposed = true;
+    });
+  }
+
+  public reveal() {
+    if (!this._isDisposed) {
+      this._panel.reveal();
+    }
+  }
+
   public set speed(v: number) {
     this._speed = v;
 
     this._panel.webview.postMessage({
-      command: MonitorViewAction.SetSpeedUpdate,
+      command: MonitorPanelAction.SetSpeedUpdate,
       data: this._speed
     });
 
@@ -48,7 +96,7 @@ export class CreateMonitorLoader {
     this._lock = v;
 
     this._panel.webview.postMessage({
-      command: MonitorViewAction.LockServer,
+      command: MonitorPanelAction.LockServer,
       data: this._lock
     });
 
@@ -62,58 +110,13 @@ export class CreateMonitorLoader {
     this._serverList.push(serverItem);
 
     this._panel.webview.postMessage({
-      command: MonitorViewAction.ToggleServer,
+      command: MonitorPanelAction.ToggleServer,
       data: this._serverList,
       current: serverItem,
       server: serverItem
     });
 
     this.updateUsers(serverItem);
-  }
-
-  constructor() {
-    const ext = vscode.extensions.getExtension("TOTVS.tds-monitor");
-    this._extensionPath = ext.extensionPath;
-
-    this._disposables.push(Utils.onDidSelectedServer((newServer: SelectServer) => {
-      toggleServerToMonitor(undefined);
-    }));
-
-
-    this._panel = vscode.window.createWebviewPanel(
-      "createMonitorView",
-      "Monitor",
-      vscode.ViewColumn.One,
-      {
-        enableScripts: true,
-        localResourceRoots: [
-          vscode.Uri.file(
-            path.join(this._extensionPath, "out", "webpack")
-          )
-        ]
-      }
-    );
-
-    this._panel.webview.html = this.getWebviewContent();
-
-    this._panel.onDidDispose((event) => {
-      monitorView = undefined;
-      this._isDisposed = true;
-    });
-
-    this._panel.webview.onDidReceiveMessage(
-      (command: IMonitorViewAction) => {
-        this.handleMessage(command);
-      },
-      undefined,
-      this._disposables
-    );
-  }
-
-  public reveal() {
-    if (!this._isDisposed) {
-      this._panel.reveal();
-    }
   }
 
   private async setLockServer(server: IMonitorItem, lock: boolean): Promise<boolean> {
@@ -217,29 +220,29 @@ export class CreateMonitorLoader {
     });
   }
 
-  private async handleMessage(command: IMonitorViewAction) {
+  private async handleMessage(command: IMonitorPanelAction) {
     switch (command.action) {
-      case MonitorViewAction.SetSpeedUpdate: {
+      case MonitorPanelAction.SetSpeedUpdate: {
         this.speed = command.content.speed;
         break;
       }
-      case MonitorViewAction.UpdateUsers: {
+      case MonitorPanelAction.UpdateUsers: {
         this.updateUsers(command.content);
         this.speed = this._speed; //força a ligar o intervalo (setInterval), se necessário
 
         break;
       }
-      case MonitorViewAction.LockServer: {
+      case MonitorPanelAction.LockServer: {
         const result = await this.setLockServer(command.content.server, command.content.lock);
         this.lock = result;
 
         break;
       }
-      case MonitorViewAction.SendMessage: {
+      case MonitorPanelAction.SendMessage: {
         this.sendMessage(command.content.server, command.content.recipients, command.content.message);
         break;
       }
-      case MonitorViewAction.KillConnection: {
+      case MonitorPanelAction.KillConnection: {
         if (command.content.killNow) {
           this.appKillConnection(command.content.server, command.content.recipients);
         } else {
@@ -250,13 +253,13 @@ export class CreateMonitorLoader {
 
         break;
       }
-      case MonitorViewAction.StopServer: {
+      case MonitorPanelAction.StopServer: {
         const server = command.content.server;
         this.stopServer(server);
 
         break;
       }
-      case MonitorViewAction.ToggleWriteLogServer: {
+      case MonitorPanelAction.ToggleWriteLogServer: {
         this.writeLogServer = !this.writeLogServer;
 
         break;
@@ -285,7 +288,7 @@ export class CreateMonitorLoader {
       );
 
     this._panel.webview.postMessage({
-      command: MonitorViewAction.UpdateUsers,
+      command: MonitorPanelAction.UpdateUsers,
       data: users
     });
 
@@ -298,18 +301,19 @@ export class CreateMonitorLoader {
     throw new Error("Method not implemented.");
   }
 
-  private getWebviewContent(): string {
+  private getWebviewContent(serverList: IMonitorItem[]): string {
     // Local path to main script run in the webview
     const reactAppPathOnDisk = vscode.Uri.file(
       path.join(
         this._extensionPath,
         "out",
         "webpack",
-        "monitorView.js"
+        "monitorPapel.js"
       )
     );
 
-    const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
+    const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
+    const configJson = JSON.stringify(serverList);
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -326,6 +330,7 @@ export class CreateMonitorLoader {
 
         <script>
           window.acquireVsCodeApi = acquireVsCodeApi;
+          window.initialData = ${configJson};
         </script>
     </head>
     <body>

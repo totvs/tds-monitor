@@ -5,7 +5,7 @@ module.exports = {
   //O webpack, pega todos os fontes tsx e os compacta em um unico arquivo .js. Isso é feito para contornar algumas limitações e alguns browsers que não aceitam a instrução import.
   //O entry pode ser definido com um objeto. A chave, ou no nome da propriedade, nesse caso sera o nome de saida do arquivo.
   entry: {
-    monitorView: "./src/monitor/app/index.tsx",
+    monitorPanel: "./src/monitor/app/index.tsx",
     welcomePage: "./src/welcome/app/index.tsx",
     addServer: "./src/addServer/app/index.tsx",
     connectDialog : "./src/connectDialog/app/index.tsx"
