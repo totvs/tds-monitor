@@ -45,6 +45,8 @@ export interface IMonitorItem {
   validConnection(): Promise<any>;
   validate(): Promise<void>;
   authenticate(): Promise<boolean>;
+
+  getUsers(): any;
 }
 
 export interface IValidationServer {

@@ -3,7 +3,6 @@ import * as path from "path";
 
 import { IMonitorItem } from "../monitorInterfaces";
 import { IConnectDialogAction, ConnectDialogAction } from "./action";
-import { toggleServerToMonitor } from "../monitor/monitorLoader";
 
 export function connectDialogLoader(server: IMonitorItem) {
   // tslint:disable-next-line: no-unused-expression
@@ -81,12 +80,13 @@ class ConnectDialogLoader {
         .then((result) => {
           if (result) {
             vscode.window.showInformationMessage("Autenticação de usuário efetuada com sucesso.");
-            toggleServerToMonitor(this._server);
-            this.closePanel();
+            vscode.commands.executeCommand('tds-monitor.add-server-monitor', this._server);
+            this._panel.dispose();
           } else {
             this.updatePanel();
           }
         }, (reason: any) => {
+          vscode.window.showErrorMessage(reason);
           this.updatePanel();
         });
     }).catch((r) => {
@@ -152,13 +152,6 @@ class ConnectDialogLoader {
   private updatePanel(): void {
     this._panel?.webview.postMessage({
       command: ConnectDialogAction.UpdateWeb,
-      data: this._server
-    });
-  }
-
-  private closePanel(): void {
-    this._panel?.webview.postMessage({
-      command: ConnectDialogAction.Close,
       data: this._server
     });
   }

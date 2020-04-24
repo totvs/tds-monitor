@@ -176,4 +176,19 @@ export class MonitorLanguageClient extends LanguageClient {
     return request;
   }
 
+  public getUsers(token: string): Promise<any[]> {
+    const request = this.sendRequest('$totvsmonitor/getUsers', {
+      getUsersInfo: {
+        connectionToken: token
+      }
+    }).then((response: any) => {
+      return response.mntUsers;
+    },
+      ((err: Error) => {
+        super.error(err.message, err);
+      })
+    );
+
+    return request;
+  }
 }

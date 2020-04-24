@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { SvgIcon } from "@material-ui/core";
 
 export function GroupingIcon(props: any) {

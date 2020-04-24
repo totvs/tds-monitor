@@ -9,9 +9,11 @@ import { IMonitorItem } from '../monitorInterfaces';
 
 let monitorLoader: MonitorLoader = undefined;
 
-export function updateMonitorPanel() {
+function updateMonitorPanel() {
   if (isNullOrUndefined(monitorLoader)) {
     monitorLoader = new MonitorLoader();
+  } else {
+    monitorLoader.reveal();
   }
 }
 
@@ -108,15 +110,7 @@ export class MonitorLoader {
 
     this._serverList = Array<IMonitorItem>();
     this._serverList.push(serverItem);
-
-    this._panel.webview.postMessage({
-      command: MonitorPanelAction.ToggleServer,
-      data: this._serverList,
-      current: serverItem,
-      server: serverItem
-    });
-
-    this.updateUsers(serverItem);
+    this.updateUsers();
   }
 
   private async setLockServer(server: IMonitorItem, lock: boolean): Promise<boolean> {
@@ -227,7 +221,7 @@ export class MonitorLoader {
         break;
       }
       case MonitorPanelAction.UpdateUsers: {
-        this.updateUsers(command.content);
+        this.updateUsers();
         this.speed = this._speed; //força a ligar o intervalo (setInterval), se necessário
 
         break;
@@ -249,7 +243,7 @@ export class MonitorLoader {
           this.killConnection(command.content.server, command.content.recipients);
         }
 
-        this.updateUsers(command.content.server);
+        this.updateUsers();
 
         break;
       }
@@ -272,29 +266,33 @@ export class MonitorLoader {
     }
   }
 
-  private async updateUsers(server: any) {
-    const users = await languageClient
-      .sendRequest('$totvsmonitor/getUsers', {
-        getUsersInfo: {
-          connectionToken: server.token
-        }
-      })
-      .then((response: any) => {
-        return response.mntUsers;
-      },
-        ((error: Error) => {
-          return null;
-        })
-      );
+  private updateUsers() {
+    let promises = [];
+    let result = [];
 
-    this._panel.webview.postMessage({
-      command: MonitorPanelAction.UpdateUsers,
-      data: users
+    this._serverList.forEach((server) => {
+      promises.push(server.getUsers());
     });
 
-    if (this.writeLogServer) {
-      this.doWriteLogServer(users);
-    }
+    Promise.all(promises)
+      .then((promise) => {
+        promise.forEach((server) => {
+          server.forEach(user => {
+            result.push(user);
+          });
+        });
+
+        return result;
+      }).then((users) => {
+        this._panel.webview.postMessage({
+          command: MonitorPanelAction.UpdateUsers,
+          data: users
+        });
+
+        if (this.writeLogServer) {
+          this.doWriteLogServer(users);
+        }
+      });
   }
 
   doWriteLogServer(users: IMonitorUser[]) {
@@ -308,7 +306,7 @@ export class MonitorLoader {
         this._extensionPath,
         "out",
         "webpack",
-        "monitorPapel.js"
+        "monitorPanel.js"
       )
     );
 

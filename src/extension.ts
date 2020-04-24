@@ -13,8 +13,6 @@ import { MonitorsExplorer } from './view/monitorsExplorer';
 export let languageClient: LanguageClient;
 
 export async function activate(context: vscode.ExtensionContext) {
-  console.debug('tds-monitor: register commands.');
-
   ServerCommands.register(context);
   //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.showWelcomePage', () => { showWelcomePage(true); }));
 

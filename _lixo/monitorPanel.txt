@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { forwardRef } from "react";
 import MaterialTable from "material-table";
 import {
   createStyles,
@@ -35,8 +35,6 @@ import Remove from "@material-ui/icons/Remove";
 import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
-import SpeedIcon from "@material-ui/icons/Speed";
-
 import {
   HeadCell,
   IConnectionData,
@@ -46,59 +44,58 @@ import StopServerDialog from "./stopServerDialog";
 import LockServerDialog from "./lockServerDialog";
 import UnlockServerDialog from "./unlockServerDialog";
 import DisconnectUserDialog from "./disconnectUserDialog";
-import { IMonitorItem } from "../../monitorInterfaces";
-import { Backdrop, Fade, CircularProgress } from "@material-ui/core";
+import SpeedButton from "./speedButton";
 
 const tableIcons = {
-  Add: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Add: forwardRef<SVGSVGElement>((props, ref) => (
     <AddBox {...props} ref={ref} />
   )),
-  Check: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Check: forwardRef<SVGSVGElement>((props, ref) => (
     <Check {...props} ref={ref} />
   )),
-  Clear: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Clear: forwardRef<SVGSVGElement>((props, ref) => (
     <Clear {...props} ref={ref} />
   )),
-  Delete: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Delete: forwardRef<SVGSVGElement>((props, ref) => (
     <DeleteOutline {...props} ref={ref} />
   )),
-  DetailPanel: React.forwardRef<SVGSVGElement>((props, ref) => (
+  DetailPanel: forwardRef<SVGSVGElement>((props, ref) => (
     <ChevronRight {...props} ref={ref} />
   )),
-  Edit: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Edit: forwardRef<SVGSVGElement>((props, ref) => (
     <Edit {...props} ref={ref} />
   )),
-  Export: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Export: forwardRef<SVGSVGElement>((props, ref) => (
     <SaveAlt {...props} ref={ref} />
   )),
-  Filter: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Filter: forwardRef<SVGSVGElement>((props, ref) => (
     <FilterList {...props} ref={ref} />
   )),
-  FirstPage: React.forwardRef<SVGSVGElement>((props, ref) => (
+  FirstPage: forwardRef<SVGSVGElement>((props, ref) => (
     <FirstPage {...props} ref={ref} />
   )),
-  LastPage: React.forwardRef<SVGSVGElement>((props, ref) => (
+  LastPage: forwardRef<SVGSVGElement>((props, ref) => (
     <LastPage {...props} ref={ref} />
   )),
-  NextPage: React.forwardRef<SVGSVGElement>((props, ref) => (
+  NextPage: forwardRef<SVGSVGElement>((props, ref) => (
     <ChevronRight {...props} ref={ref} />
   )),
-  PreviousPage: React.forwardRef<SVGSVGElement>((props, ref) => (
+  PreviousPage: forwardRef<SVGSVGElement>((props, ref) => (
     <ChevronLeft {...props} ref={ref} />
   )),
-  ResetSearch: React.forwardRef<SVGSVGElement>((props, ref) => (
+  ResetSearch: forwardRef<SVGSVGElement>((props, ref) => (
     <Clear {...props} ref={ref} />
   )),
-  Search: React.forwardRef<SVGSVGElement>((props, ref) => (
+  Search: forwardRef<SVGSVGElement>((props, ref) => (
     <Search {...props} ref={ref} />
   )),
-  SortArrow: React.forwardRef<SVGSVGElement>((props, ref) => (
+  SortArrow: forwardRef<SVGSVGElement>((props, ref) => (
     <ArrowDownward {...props} ref={ref} />
   )),
-  ThirdStateCheck: React.forwardRef<SVGSVGElement>((props, ref) => (
+  ThirdStateCheck: forwardRef<SVGSVGElement>((props, ref) => (
     <Remove {...props} ref={ref} />
   )),
-  ViewColumn: React.forwardRef<SVGSVGElement>((props, ref) => (
+  ViewColumn: forwardRef<SVGSVGElement>((props, ref) => (
     <ViewColumn {...props} ref={ref} />
   )),
 };
@@ -162,21 +159,20 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 );
 
 /*  return (
-    <React.flagment className={classes.toolbarButtons}>
+    <div className={classes.toolbarButtons}>
 
       <DisconnecttUserDialog
         open={openDesconnectUserDialog}
         recipients={selecteds.map(element => element.username)}
         onClose={doDisconnectUser}
       />
-    </React.flagment>
+    </div>
   );
 */
 
 interface IMonitorPanel {
-  speed: any;
   vscode: any;
-  targetServer: IMonitorItem[];
+  targetServer: any;
 }
 
 let listener = undefined;
@@ -210,7 +206,8 @@ export default function MonitorPanel(props: IMonitorPanel) {
     sendMessage: false,
     disconnectUser: false,
   });
-  const [loading, setLoading] = React.useState(false);
+
+  const [query, setQuery] = React.useState("idle");
   const timerRef = React.useRef<number>();
 
   React.useEffect(
@@ -220,11 +217,23 @@ export default function MonitorPanel(props: IMonitorPanel) {
     []
   );
 
+  const [, setTargetServer] = React.useState();
+  const [, setTitles] = React.useState([]);
+
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
       const message = event.data; // The JSON data our extension sent
 
       switch (message.command) {
+        case MonitorPanelAction.ToggleServer: {
+          setTargetServer(message.current);
+          setTitles([
+            message.server.name,
+            message.server.address + ":" + message.server.port,
+          ]);
+
+          break;
+        }
         case MonitorPanelAction.SetSpeedUpdate: {
           setSpeed(message.data);
 
@@ -234,7 +243,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
           const result = message.data as IMonitorUser[];
 
           setRows(result);
-          setLoading(false);
+
           break;
         }
         default:
@@ -248,15 +257,27 @@ export default function MonitorPanel(props: IMonitorPanel) {
   }
 
   const handleSpeedButtonChange = () => {
-    setLoading(true);
+    clearTimeout(timerRef.current);
 
-    let command: IMonitorPanelAction = {
-      action: MonitorPanelAction.UpdateUsers,
-      content: props.targetServer,
-    };
+    if (query !== "idle") {
+      setQuery("idle");
+      return;
+    }
 
-    props.vscode.postMessage(command);
+    setQuery("progress");
+    // timerRef.current = setInterval(() => {
+    //   setQuery("success");
+    // }, 2000);
   };
+
+  // const updateUsers = () => {
+  //   let command: IMonitorViewAction = {
+  //     action: MonitorViewAction.UpdateUsers,
+  //     content: props.targetServer,
+  //   };
+
+  //   props.vscode.postMessage(command);
+  // };
 
   if (!props.targetServer) {
     return <Typography>Inicializando...</Typography>;
@@ -453,26 +474,16 @@ export default function MonitorPanel(props: IMonitorPanel) {
     onClick: () => setFiltering(!filtering),
   });
 
-  actions.push({
-    icon: () => <SpeedIcon />,
-    tooltip: "Update speend",
-    isFreeAction: true,
-    onClick: () => handleSpeedButtonChange(),
-  });
+  const speedOptions: any = ["5", "15", "30", "60"];
 
   return (
-    <React.Fragment>
+    <div>
       <Paper>
         <MaterialTable
           icons={tableIcons}
           columns={headCells}
           data={rows}
-          title={
-            <Title
-              title={"Monitor"}
-              subtitle={"Monitorados: " + props.targetServer.length}
-            />
-          }
+          title={<Title title={"props.titles[0]"} subtitle={"props.titles[1]"} />}
           options={{
             selection: true,
             grouping: grouping,
@@ -485,18 +496,6 @@ export default function MonitorPanel(props: IMonitorPanel) {
           actions={actions}
         />
       </Paper>
-
-      <Backdrop open={loading}>
-        <Fade
-          in={loading}
-          style={{
-            transitionDelay: loading ? "800ms" : "0ms",
-          }}
-          unmountOnExit
-        >
-          <CircularProgress />
-        </Fade>
-      </Backdrop>
 
       <SendMessageDialog
         open={openDialog.sendMessage}
@@ -518,6 +517,12 @@ export default function MonitorPanel(props: IMonitorPanel) {
         open={openDialog.unlockServer}
         onClose={doUnlockServer}
       />
-    </React.Fragment>
+
+      <SpeedButton
+        options={speedOptions}
+        callback={handleSpeedButtonChange}
+        value={speedOptions.indexOf(props.targetServer.speed)}
+      />
+    </div>
   );
 }

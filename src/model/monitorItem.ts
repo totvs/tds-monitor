@@ -28,7 +28,6 @@ export class MonitorItem implements IMonitorItem {
 	needAuthentication: boolean = false;
 	username: string = "";
 	password: string = "";
-	authenticationToken: string = "";
 
 	public initialize(content: any): boolean { //JSON format
 		let needUpdate = false;
@@ -208,25 +207,35 @@ export class MonitorItem implements IMonitorItem {
 
 	public async authenticate(): Promise<boolean> {
 		const lsc = await getLanguageClient();
-		this.authenticationToken = "";
 		this.errors = [];
 
 		const request = lsc
 			.authenticate(this.token, this.environment, this.username, this.password)
 			.then((value) => {
-				this.authenticationToken = value;
-				return (value.length > 0);
-			})
-			.finally(() => {
-				if (this.authenticationToken === "") {
+				if (value.length > 0) {
+					this.token = value;
+				} else {
 					this.errors.push(createError(Severity.ERROR, "username", "Credenciais inválidas"));
 					this.errors.push(createError(Severity.ERROR, "password", "Credenciais inválidas"));
 				}
 
-				return (this.errors.length === 0);
+				return (value.length > 0);
 			});
 
 		return request;
+	}
+
+	public async getUsers(): Promise<any[]> {
+		const lsc = await getLanguageClient();
+
+		const request = await lsc
+			.getUsers(this.token)
+			.then((value) => {
+				return (value);
+			});
+
+		return request;
+
 	}
 }
 
