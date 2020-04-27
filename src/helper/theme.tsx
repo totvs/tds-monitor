@@ -8,7 +8,7 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 let appTheme = createMuiTheme({
   props: {
     MuiTextField: { variant: "filled", margin: "normal" },
-    MuiToolbar: { variant: "dense" }
+    MuiToolbar: { variant: "dense" },
   },
 });
 

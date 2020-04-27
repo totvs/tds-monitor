@@ -290,7 +290,6 @@ export default function MonitorPanel(props: IMonitorPanel) {
 
   const doSpeedUpdate = (confirm: boolean, speed: number) => {
     setOpenDialog({ ...openDialog, speedUpdate: false });
-console.log("doSpeedUpdate " + speed + " " + confirm);
 
     if (confirm) {
       let command: IMonitorPanelAction = {
