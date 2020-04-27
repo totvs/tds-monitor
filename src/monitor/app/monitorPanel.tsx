@@ -36,6 +36,7 @@ import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
 import SpeedIcon from "@material-ui/icons/Speed";
+import RefreshIcon from "@material-ui/icons/Refresh";
 
 import {
   HeadCell,
@@ -47,7 +48,7 @@ import LockServerDialog from "./lockServerDialog";
 import UnlockServerDialog from "./unlockServerDialog";
 import DisconnectUserDialog from "./disconnectUserDialog";
 import { IMonitorItem } from "../../monitorInterfaces";
-import { Backdrop, Fade, CircularProgress } from "@material-ui/core";
+import SpeedUpdateDialogDialog from "./speedUpdateDialog";
 
 const tableIcons = {
   Add: React.forwardRef<SVGSVGElement>((props, ref) => (
@@ -161,18 +162,6 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
   })
 );
 
-/*  return (
-    <React.flagment className={classes.toolbarButtons}>
-
-      <DisconnecttUserDialog
-        open={openDesconnectUserDialog}
-        recipients={selecteds.map(element => element.username)}
-        onClose={doDisconnectUser}
-      />
-    </React.flagment>
-  );
-*/
-
 interface IMonitorPanel {
   speed: any;
   vscode: any;
@@ -201,7 +190,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
   const [grouping, setGrouping] = React.useState(false);
   const [filtering, setFiltering] = React.useState(false);
   const [selected, setSelected] = React.useState<IConnectionData[]>([]);
-  const [, setSpeed] = React.useState(0);
+  const [speed, setSpeed] = React.useState(props.speed);
   const [rows, setRows] = React.useState([]);
   const [subtitle, setSubtitle] = React.useState(props.targetServer.length);
 
@@ -211,23 +200,17 @@ export default function MonitorPanel(props: IMonitorPanel) {
     stopServer: false,
     sendMessage: false,
     disconnectUser: false,
+    speedUpdate: false,
   });
-  const [loading, setLoading] = React.useState(false);
-  const timerRef = React.useRef<number>();
 
-  React.useEffect(
-    () => () => {
-      clearInterval(timerRef.current);
-    },
-    []
-  );
+  const [targetRow, setTargetRow] = React.useState(null);
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
       const message = event.data; // The JSON data our extension sent
 
       switch (message.command) {
-        case MonitorPanelAction.SetSpeedUpdate: {
+        case MonitorPanelAction._SetSpeedUpdate: {
           setSpeed(message.data);
 
           break;
@@ -237,7 +220,6 @@ export default function MonitorPanel(props: IMonitorPanel) {
 
           setRows(result);
           setSubtitle(result.length);
-          setLoading(false);
           break;
         }
         default:
@@ -251,15 +233,22 @@ export default function MonitorPanel(props: IMonitorPanel) {
   }
 
   const handleSpeedButtonChange = () => {
-    setLoading(true);
+    event.preventDefault();
+
+    setOpenDialog({ ...openDialog, speedUpdate: true });
+
+  };
+
+  const handleRefreshButtonChange = () => {
+    event.preventDefault();
 
     let command: IMonitorPanelAction = {
       action: MonitorPanelAction.UpdateUsers,
-      content: props.targetServer,
+      content: { server: props.targetServer },
     };
 
     props.vscode.postMessage(command);
-  };
+};
 
   if (!props.targetServer) {
     return <Typography>Inicializando...</Typography>;
@@ -270,10 +259,12 @@ export default function MonitorPanel(props: IMonitorPanel) {
   ) => {
     event.preventDefault();
 
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, lockServer: true });
   };
 
   const doLockServer = (confirm: boolean) => {
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, lockServer: false });
 
     if (confirm) {
@@ -297,10 +288,26 @@ export default function MonitorPanel(props: IMonitorPanel) {
     }
   };
 
+  const doSpeedUpdate = (confirm: boolean, speed: number) => {
+    setOpenDialog({ ...openDialog, speedUpdate: false });
+console.log("doSpeedUpdate " + speed + " " + confirm);
+
+    if (confirm) {
+      let command: IMonitorPanelAction = {
+        action: MonitorPanelAction._SetSpeedUpdate,
+        content: { speed: speed} ,
+      };
+
+      props.vscode.postMessage(command);
+    }
+  };
+
   const handleUnlockButtonClick = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
+
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, unlockServer: false });
   };
 
@@ -308,10 +315,13 @@ export default function MonitorPanel(props: IMonitorPanel) {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
+
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, stopServer: true });
   };
 
   const doStopServer = (killNow: boolean) => {
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, stopServer: false });
 
     let command: IMonitorPanelAction = {
@@ -323,16 +333,22 @@ export default function MonitorPanel(props: IMonitorPanel) {
   };
 
   const handleSendMessageButtonClick = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    row: any
   ) => {
     event.preventDefault();
+
+    setTargetRow(row);
     setOpenDialog({ ...openDialog, sendMessage: true });
   };
 
   const handleDisconnectUserButtonClick = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    row: any
   ) => {
     event.preventDefault();
+
+    setTargetRow(row);
     setOpenDialog({ ...openDialog, disconnectUser: true });
   };
 
@@ -342,6 +358,8 @@ export default function MonitorPanel(props: IMonitorPanel) {
     recipients: any[]
   ) => {
     event.preventDefault();
+
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, disconnectUser: false });
 
     if (confirmed) {
@@ -364,6 +382,8 @@ export default function MonitorPanel(props: IMonitorPanel) {
     recipients: any[]
   ) => {
     event.preventDefault();
+
+    setTargetRow(null);
     setOpenDialog({ ...openDialog, sendMessage: false });
 
     if (confirmed) {
@@ -390,6 +410,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
   };
 
   const actions = [];
+
   const locked = false;
   if (!locked) {
     actions.push({
@@ -411,21 +432,28 @@ export default function MonitorPanel(props: IMonitorPanel) {
     icon: () => <MessageIcon />,
     tooltip: "Send message to all users",
     isFreeAction: true,
-    onClick: (event: any) => handleSendMessageButtonClick(event),
+    onClick: (event: any) => handleSendMessageButtonClick(event, null),
   });
 
   actions.push({
     icon: () => <MessageIcon />,
     tooltip: "Send message to selected users",
     isFreeAction: false,
-    onClick: (event: any) => handleSendMessageButtonClick(event),
+    onClick: (event: any, row: any) => handleSendMessageButtonClick(event, row),
   });
 
   actions.push({
     icon: () => <DisconnectIcon />,
-    tooltip: "Disconnect user",
+    tooltip: "Disconnect all users",
     isFreeAction: true,
-    onClick: (event: any) => handleDisconnectUserButtonClick(event),
+    onClick: (event: any) => handleDisconnectUserButtonClick(event, null),
+  });
+
+  actions.push({
+    icon: () => <DisconnectIcon />,
+    tooltip: "Disconnect selectd users",
+    isFreeAction: false,
+    onClick: (event: any) => handleDisconnectUserButtonClick(event, rows),
   });
 
   actions.push({
@@ -458,53 +486,48 @@ export default function MonitorPanel(props: IMonitorPanel) {
 
   actions.push({
     icon: () => <SpeedIcon />,
-    tooltip: "Update speend",
+    tooltip: "Update speed",
     isFreeAction: true,
     onClick: () => handleSpeedButtonChange(),
+  });
+
+  actions.push({
+    icon: () => <RefreshIcon />,
+    tooltip: "Refresh data",
+    isFreeAction: true,
+    onClick: () => handleRefreshButtonChange(),
   });
 
   return (
     <React.Fragment>
       <Paper>
-        <MaterialTable
-          icons={tableIcons}
-          columns={headCells}
-          data={rows}
-          title={
-            <Title
-              title={"Monitor"}
-              subtitle={"Monitorados: " + subtitle}
-            />
-          }
-          options={{
-            selection: true,
-            grouping: grouping,
-            filtering: filtering,
-            exportButton: false,
-            exportCsv: () => {},
-            padding: "dense"
-          }}
-          onSelectionChange={(rows) => setSelected(rows)}
-          onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
-          actions={actions}
-        />
+          <MaterialTable
+            icons={tableIcons}
+            columns={headCells}
+            data={rows}
+            title={
+              <Title title={"Monitor"} subtitle={"Monitorados: " + subtitle} />
+            }
+            options={{
+              selection: true,
+              grouping: grouping,
+              filtering: filtering,
+              exportButton: false,
+              exportCsv: () => {},
+              padding: "dense",
+              actionsColumnIndex: 0,
+            }}
+            onSelectionChange={(rows) => setSelected(rows)}
+            onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
+            actions={ actions}
+          />
       </Paper>
-
-      <Backdrop open={loading} style={{"zIndex": 10000}}>
-        <Fade
-          in={loading}
-          style={{
-            transitionDelay: loading ? "800ms" : "0ms",
-          }}
-          unmountOnExit
-        >
-          <CircularProgress />
-        </Fade>
-      </Backdrop>
 
       <SendMessageDialog
         open={openDialog.sendMessage}
-        recipients={selected.length === 0 ? rows : selected}
+        recipients={
+          selected.length > 0 ? selected : targetRow ? targetRow : rows
+        }
         onClose={doSendMessage}
       />
 
@@ -521,6 +544,11 @@ export default function MonitorPanel(props: IMonitorPanel) {
       <UnlockServerDialog
         open={openDialog.unlockServer}
         onClose={doUnlockServer}
+      />
+
+      <SpeedUpdateDialogDialog speed={speed}
+        open={openDialog.speedUpdate}
+        onClose={doSpeedUpdate}
       />
     </React.Fragment>
   );

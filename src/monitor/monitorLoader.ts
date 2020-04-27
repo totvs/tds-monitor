@@ -7,6 +7,8 @@ import IMonitorUser from "./monitorUser";
 
 import { IMonitorItem } from '../monitorInterfaces';
 
+const DEFAULT_SPEED = 10;
+
 let monitorLoader: MonitorLoader = undefined;
 
 function updateMonitorPanel() {
@@ -29,8 +31,9 @@ export class MonitorLoader {
   private _disposables: vscode.Disposable[] = [];
   private _isDisposed: boolean = false;
   private _serverList: IMonitorItem[] = Array<IMonitorItem>();
-  private _speed: number = 10000;
+  private _speed: number = 10;
   private _lock: boolean = false;
+  private _timeoutSched: any = undefined;
 
   constructor() {
     const ext = vscode.extensions.getExtension("TOTVS.tds-monitor");
@@ -69,9 +72,14 @@ export class MonitorLoader {
     );
 
     this._panel.onDidDispose((event) => {
+      if (this._timeoutSched) {
+        clearTimeout(this._timeoutSched);
+      }
       monitorLoader = undefined;
       this._isDisposed = true;
     });
+
+    this.speed = DEFAULT_SPEED;
   }
 
   public reveal() {
@@ -81,14 +89,19 @@ export class MonitorLoader {
   }
 
   public set speed(v: number) {
-    this._speed = v * 1000;
+    this._speed = v;
+    if (this._speed === 0)
+      {
+        vscode.window.showInformationMessage("A atualização ocorrerá por solicitação.");
+      } else {
+        vscode.window.showInformationMessage(`A atualização ocorrerá a cada ${this._speed} segundos.`);
+      }
+      this._panel.webview.postMessage({
+        command: MonitorPanelAction._SetSpeedUpdate,
+        data: v
+      });
 
-    this._panel.webview.postMessage({
-      command: MonitorPanelAction.SetSpeedUpdate,
-      data: v
-    });
-
-  }
+    }
 
   public set writeLogServer(v: boolean) {
     //this._writeLogServer = v;
@@ -216,7 +229,7 @@ export class MonitorLoader {
 
   private async handleMessage(command: IMonitorPanelAction) {
     switch (command.action) {
-      case MonitorPanelAction.SetSpeedUpdate: {
+      case MonitorPanelAction._SetSpeedUpdate: {
         this.speed = command.content.speed;
         break;
       }
@@ -259,7 +272,7 @@ export class MonitorLoader {
         break;
       }
       default:
-        console.log("***** ATENÇÃO: createMonitorLoader.tsx");
+        console.log("***** ATENÇÃO: monitorLoader.tsx");
         console.log("\tComando não reconhecido: " + command.action);
         console.log("\t" + command.content);
         break;
@@ -298,7 +311,7 @@ export class MonitorLoader {
       }).finally(() => {
         if (scheduler) {
           if (this._speed > 0) {
-            setTimeout(updateScheduledUsers, this._speed, this, true);
+            this._timeoutSched = setTimeout(updateScheduledUsers, this._speed * 1000, this, true);
           }
         }
       });
@@ -320,7 +333,7 @@ export class MonitorLoader {
     );
 
     const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
-    const configJson = JSON.stringify(serverList);
+    const configJson = JSON.stringify({ serverList: serverList, speed: this._speed });
 
     return `<!DOCTYPE html>
     <html lang="en">
