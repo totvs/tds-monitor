@@ -8,15 +8,7 @@ import {
 } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import {
-  LockIcon,
-  UnlockIcon,
-  MessageIcon,
-  GroupingIcon,
-  StopIcon,
-  WriteLogIcon,
-  DisconnectIcon,
-} from "../../helper/monitorIcons";
+import { WriteLogIcon, DisconnectIcon, GroupingIcon } from "../../helper/monitorIcons";
 import { MonitorPanelAction, IMonitorPanelAction } from "../actions";
 import IMonitorUser from "../monitorUser";
 import SendMessageDialog from "./sendMessageDialog";
@@ -26,7 +18,7 @@ import Check from "@material-ui/icons/Check";
 import ChevronLeft from "@material-ui/icons/ChevronLeft";
 import ChevronRight from "@material-ui/icons/ChevronRight";
 import Clear from "@material-ui/icons/Clear";
-import DeleteOutline from "@material-ui/icons/DeleteOutline";
+import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import FilterList from "@material-ui/icons/FilterList";
 import FirstPage from "@material-ui/icons/FirstPage";
@@ -37,6 +29,10 @@ import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
 import SpeedIcon from "@material-ui/icons/Speed";
 import RefreshIcon from "@material-ui/icons/Refresh";
+import LockIcon from "@material-ui/icons/Lock";
+import LockOpenIcon from "@material-ui/icons/LockOpen";
+import MessageIcon from "@material-ui/icons/Message";
+import StopIcon from "@material-ui/icons/Stop";
 
 import {
   HeadCell,
@@ -61,7 +57,7 @@ const tableIcons = {
     <Clear {...props} ref={ref} />
   )),
   Delete: React.forwardRef<SVGSVGElement>((props, ref) => (
-    <DeleteOutline {...props} ref={ref} />
+    <Delete {...props} ref={ref} />
   )),
   DetailPanel: React.forwardRef<SVGSVGElement>((props, ref) => (
     <ChevronRight {...props} ref={ref} />
@@ -236,7 +232,6 @@ export default function MonitorPanel(props: IMonitorPanel) {
     event.preventDefault();
 
     setOpenDialog({ ...openDialog, speedUpdate: true });
-
   };
 
   const handleRefreshButtonChange = () => {
@@ -248,7 +243,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
     };
 
     props.vscode.postMessage(command);
-};
+  };
 
   if (!props.targetServer) {
     return <Typography>Inicializando...</Typography>;
@@ -294,7 +289,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
     if (confirm) {
       let command: IMonitorPanelAction = {
         action: MonitorPanelAction._SetSpeedUpdate,
-        content: { speed: speed} ,
+        content: { speed: speed },
       };
 
       props.vscode.postMessage(command);
@@ -420,7 +415,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
     });
   } else {
     actions.push({
-      icon: () => <UnlockIcon />,
+      icon: () => <LockOpenIcon />,
       tooltip: "Unlock server",
       isFreeAction: true,
       onClick: (event: any) => handleUnlockButtonClick(event),
@@ -500,26 +495,26 @@ export default function MonitorPanel(props: IMonitorPanel) {
   return (
     <React.Fragment>
       <Paper>
-          <MaterialTable
-            icons={tableIcons}
-            columns={headCells}
-            data={rows}
-            title={
-              <Title title={"Monitor"} subtitle={"Monitorados: " + subtitle} />
-            }
-            options={{
-              selection: true,
-              grouping: grouping,
-              filtering: filtering,
-              exportButton: false,
-              exportCsv: () => {},
-              padding: "dense",
-              actionsColumnIndex: 0,
-            }}
-            onSelectionChange={(rows) => setSelected(rows)}
-            onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
-            actions={ actions}
-          />
+        <MaterialTable
+          icons={tableIcons}
+          columns={headCells}
+          data={rows}
+          title={
+            <Title title={"Monitor"} subtitle={"Monitorados: " + subtitle} />
+          }
+          options={{
+            selection: true,
+            grouping: grouping,
+            filtering: filtering,
+            exportButton: false,
+            exportCsv: () => {},
+            padding: "dense",
+            actionsColumnIndex: 0,
+          }}
+          onSelectionChange={(rows) => setSelected(rows)}
+          onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
+          actions={actions}
+        />
       </Paper>
 
       <SendMessageDialog
@@ -545,7 +540,8 @@ export default function MonitorPanel(props: IMonitorPanel) {
         onClose={doUnlockServer}
       />
 
-      <SpeedUpdateDialogDialog speed={speed}
+      <SpeedUpdateDialogDialog
+        speed={speed}
         open={openDialog.speedUpdate}
         onClose={doSpeedUpdate}
       />

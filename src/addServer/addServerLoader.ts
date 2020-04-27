@@ -53,6 +53,9 @@ class AddServerLoader {
       case AddServerAction.UpdateModel:
         this.updateModel(command.content);
         break;
+      case AddServerAction.Validate:
+        this.validade(command.content);
+        break;
       case AddServerAction.SelectSmartClient:
         this.selectSmartClient(command.content);
         break;
@@ -94,28 +97,34 @@ class AddServerLoader {
   private updateModel(content: any) {
     let needUpdate: boolean = false;
 
-    const p = this._server.updateProperties(content);
-    p.then(async () => {
-      if (this._server.errors.length === 0) {
-        if (this._server.buildVersion === "" && this._server.address !== "") {
+    this._server.updateProperties(content)
+      .then((update) => {
+        needUpdate = update;
+      }).catch((r) => {
+        console.log(r);
+      }).finally(() => {
+        if (needUpdate) {
+          this.updatePanel();
+        }
+      });
+  }
+
+  private validade(content: any) {
+    this._server.updateProperties(content)
+      .then(async () => {
+        if (this._server.errors.length === 0) {
           this._server.validConnection().then((result) => {
-            this._server.buildVersion = result.buildVersion;
-            this._server.secure = result.secure;
+            if (!result) {
+              this._server.buildVersion = "";
+              this._server.secure = false;
+            }
           }).finally(() => {
             this.updatePanel();
           });
         }
-      }
-    });
-    p.then((update) => {
-      needUpdate = update;
-    }).catch((r) => {
-      console.log(r);
-    }).finally(() => {
-      if (needUpdate) {
+      }).finally(() => {
         this.updatePanel();
-      }
-    });
+      });
   }
 
   private getWebviewContent(monitorItem: IMonitorItem): string {

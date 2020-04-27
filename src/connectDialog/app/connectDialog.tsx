@@ -264,6 +264,8 @@ export default function ConnectDialog(props: IConnectDialogProps) {
                 disabled={isAuthenticating}
               />
             </Grid>
+            <Grid item xs={1}>
+            </Grid>
             <Grid item xs={2}>
               <Button
                 style={{ marginTop: 20 }}

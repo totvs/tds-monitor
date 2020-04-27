@@ -5,7 +5,7 @@ import ErrorBoundary from "../../helper/errorBoundary";
 import MonitorTheme from "../../helper/theme";
 import CancelIcon from "@material-ui/icons/Cancel";
 import DoneIcon from "@material-ui/icons/Done";
-import OpenInBroserIcon from "@material-ui/icons/OpenInBrowser";
+import OpenInBrowserIcon from "@material-ui/icons/OpenInBrowser";
 
 import {
   Typography,
@@ -18,9 +18,14 @@ import {
   IconButton,
   MenuItem,
   SvgIcon,
-  InputAdornment
+  Grid,
+  InputAdornment,
+  Button,
+  Fade,
+  CircularProgress,
 } from "@material-ui/core";
 import { IAddServerAction, AddServerAction } from "../action";
+import CheckIcon from "@material-ui/icons/Check";
 
 interface IAddServerWizardProps {
   vscode: any;
@@ -42,6 +47,7 @@ let listener: EventListenerOrEventListenerObject | undefined = undefined;
 export default function AddServerWizard(props: IAddServerWizardProps) {
   const [activeStep, setActiveStep] = React.useState(1);
   const [state, setState] = React.useState<IMonitorItem>(props.monitorItem);
+  const [isValidateVersion, setValidateVersion] = React.useState<boolean>(false);
 
   if (listener === undefined) {
     listener = (event: MessageEvent) => {
@@ -51,6 +57,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
         case AddServerAction.UpdateWeb: {
           const data = { ...state, ...message.data };
           setState(data);
+          setValidateVersion(false);
           break;
         }
         default:
@@ -66,7 +73,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
   const updateModel = (data: any) => {
     let command: IAddServerAction = {
       action: AddServerAction.UpdateModel,
-      content: data
+      content: data,
     };
 
     props.vscode.postMessage(command);
@@ -75,7 +82,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
   const handleNavButton = (event: React.ChangeEvent<{}>, value: number) => {
     let command: IAddServerAction = {
       action: value,
-      content: state
+      content: state,
     };
 
     props.vscode.postMessage(command);
@@ -84,7 +91,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
   const selectSmartClient = () => {
     let command: IAddServerAction = {
       action: AddServerAction.SelectSmartClient,
-      content: state.smartClient
+      content: state.smartClient,
     };
 
     props.vscode.postMessage(command);
@@ -111,30 +118,43 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
     }
   };
 
-  const getError = (target: keyof IMonitorItem, noErrorMessage: string): string => {
-    let error = state.errors.find(err => {
-        if (
-          err.severity === Severity.ERROR &&
-          ((target === undefined) || (err.id === target))
-        ) {
-          return err;
-        }
+  const getError = (
+    target: keyof IMonitorItem,
+    noErrorMessage: string
+  ): string => {
+    let error = state.errors.find((err) => {
+      if (
+        err.severity === Severity.ERROR &&
+        (target === undefined || err.id === target)
+      ) {
+        return err;
+      }
 
-        return undefined;
-      });
+      return undefined;
+    });
 
     return error ? error.message : noErrorMessage;
   };
 
   const isError = (target?: keyof IMonitorItem): boolean => {
-
     return !(getError(target, "_no_error_") === "_no_error_");
   };
 
   const serverTypes = [
     { label: "Protheus", value: "protheus" },
-    { label: "Logix", value: "logix" }
+    { label: "Logix", value: "logix" },
   ];
+
+  const handleButton = (event: React.MouseEvent<HTMLInputElement>) => {
+    setValidateVersion(true);
+
+    let command: IAddServerAction = {
+      action: AddServerAction.Validate,
+      content: state,
+    };
+
+    props.vscode.postMessage(command);
+  };
 
   const folders = [{ label: "<servidores>", value: "/" }];
 
@@ -146,45 +166,32 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
             <IconButton edge="start" color="inherit" aria-label="menu" disabled>
               <ServerIcon />
             </IconButton>
-            <Typography variant="caption">Servidor: Novo</Typography>
-            &nbsp;&nbsp;
-            <Typography variant="subtitle1">
+            <Typography variant="caption">
               Informe parâmetros de conexão e confirme.
             </Typography>
           </Toolbar>
-          <React.Fragment>
-            <TextField
-              name="parent"
-              select
-              label="Destino"
-              value={state.parent}
-              onChange={handleChange}
-              helperText={getError("parent",
-                "Selecione a pasta para melhorar a organização."
-              )}
-              disabled
-            >
-              {folders.map(option => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              name="type"
-              select
-              label="Tipo"
-              value={state.type}
-              onChange={handleChange}
-              helperText="Selecione o tipo de aplicação servidora."
-            >
-              {serverTypes.map(option => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
+          <Grid container spacing={0}>
+            <Grid item xs={12}>
+              <TextField
+                name="parent"
+                select
+                label="Destino"
+                value={state.parent}
+                onChange={handleChange}
+                helperText={getError(
+                  "parent",
+                  "Selecione a pasta para melhorar a organização."
+                )}
+                disabled
+                fullWidth
+              >
+                {folders.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
 
             <TextField
               error={isError("smartClient")}
@@ -195,80 +202,148 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
               onChange={handleChange}
               fullWidth
               InputProps={{
-                endAdornment: <InputAdornment position="end" onClick={selectSmartClient}><OpenInBroserIcon /></InputAdornment>,
+                endAdornment: (
+                  <InputAdornment position="end" onClick={selectSmartClient}>
+                    <OpenInBrowserIcon />
+                  </InputAdornment>
+                ),
               }}
             />
-            <TextField
-              error={isError("name")}
-              name="name"
-              label="Nome"
-              required
-              value={state.name}
-              helperText={getError( "name",
-                "Informe o nome para identificação do registro."
-              )}
-              onChange={handleChange}
-            />
-            <TextField
-              error={isError("address")}
-              type="uri"
-              name="address"
-              label="Endereço"
-              required
-              value={state.address}
-              helperText={getError("address",
-                "Informe o nome ou endereço IP e porta de conexão."
-              )}
-              onChange={handleChange}
-            />
-            <TextField
-              error={isError("port")}
-              name="port"
-              label="Porta"
-              required
-              type="number"
-              value={state.port}
-              helperText={getError("port",
-                "Informe a porta de conexão. Normalmente é a mesma do SmartClient."
-              )}
-              onChange={handleChange}
-            />
-            <TextField
-              error={isError("buildVersion")}
-              name="buildVersion"
-              label="Versão"
-              value={state.buildVersion}
-              helperText={getError("buildVersion", "Versão do servidor.")}
-              disabled
-            />
-            <FormControlLabel
-              name="secure"
-              control={<Checkbox checked={state.secure} value="ssl" />}
-              label="Conexão segura (SSL)"
-              onChange={handleChange}
-              disabled
-            />
-            <BottomNavigation
-              value={activeStep}
-              showLabels
-              onChange={(event, newValue) => {
-                handleNavButton(event, newValue);
-                setActiveStep(newValue);
-              }}
-            >
-              <BottomNavigationAction
-                label={"Finish"}
-                value={AddServerAction.SaveAndClose}
-                disabled={isError("buildVersion")}
-                icon={<DoneIcon />}
+
+            <Grid item xs={3}>
+              <TextField
+                name="type"
+                select
+                label="Tipo"
+                fullWidth
+                value={state.type}
+                onChange={handleChange}
+                helperText="Selecione o tipo de aplicação servidora."
+              >
+                {serverTypes.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={9}>
+              <TextField
+                error={isError("name")}
+                name="name"
+                label="Nome"
+                required
+                value={state.name}
+                fullWidth
+                helperText={getError(
+                  "name",
+                  "Informe o nome para identificação do registro."
+                )}
+                onChange={handleChange}
               />
-              <BottomNavigationAction
-                label="Cancel"
-                value={AddServerAction.Close}
-                icon={<CancelIcon />}
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                error={isError("address")}
+                type="uri"
+                name="address"
+                label="Endereço"
+                required
+                fullWidth
+                value={state.address}
+                helperText={getError(
+                  "address",
+                  "Informe o nome ou endereço IP e porta de conexão."
+                )}
+                onChange={handleChange}
               />
-            </BottomNavigation>
-          </React.Fragment>
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                error={isError("port")}
+                name="port"
+                label="Porta"
+                required
+                type="number"
+                value={state.port}
+                helperText={getError(
+                  "port",
+                  "Informe a porta de conexão. Normalmente é a mesma do SmartClient."
+                )}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <Button
+                style={{ marginTop: 20 }}
+                size="large"
+                disabled={isValidateVersion}
+                onClick={handleButton}
+                startIcon={<CheckIcon />}
+                fullWidth
+              >
+                {isValidateVersion ? (
+                  <React.Fragment>
+                    <Typography>Validando... </Typography>
+                    <Fade
+                      in={true}
+                      style={{
+                        transitionDelay: "800ms",
+                      }}
+                      unmountOnExit
+                    >
+                      <CircularProgress />
+                    </Fade>
+                  </React.Fragment>
+                ) : (
+                  <Typography>Validar</Typography>
+                )}
+              </Button>
+            </Grid>
+
+            <Grid item xs={3}>
+              <TextField
+                error={isError("buildVersion")}
+                name="buildVersion"
+                label="Versão"
+                value={state.buildVersion}
+                helperText={getError("buildVersion", "Versão do servidor.")}
+                disabled
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <FormControlLabel
+                name="secure"
+                control={<Checkbox checked={state.secure} value="ssl" />}
+                label="Conexão segura (SSL)"
+                onChange={handleChange}
+                disabled
+              />
+            </Grid>
+            <Grid item xs={9}></Grid>
+          </Grid>
+
+          <BottomNavigation
+            value={activeStep}
+            showLabels
+            onChange={(event, newValue) => {
+              handleNavButton(event, newValue);
+              setActiveStep(newValue);
+            }}
+          >
+            <BottomNavigationAction
+              label={"Finish"}
+              value={AddServerAction.SaveAndClose}
+              disabled={isError("buildVersion")}
+              icon={<DoneIcon />}
+            />
+            <BottomNavigationAction
+              label="Cancel"
+              value={AddServerAction.Close}
+              icon={<CancelIcon />}
+            />
+          </BottomNavigation>
         </MonitorTheme>
       </ErrorBoundary>
     </React.Fragment>

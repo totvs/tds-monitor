@@ -8,5 +8,6 @@ export enum AddServerAction {
   UpdateModel,
   SaveAndClose,
   Close,
-  SelectSmartClient
+  SelectSmartClient,
+  Validate
 }
