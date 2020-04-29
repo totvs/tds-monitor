@@ -2,7 +2,7 @@
   "name": "tds-monitor",
   "displayName": "TDS Monitor for VSCode",
   "description": "%tds.package.description%",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "publisher": "TOTVS",
   "author": {
     "name": "TOTVS",
@@ -162,7 +162,7 @@
       },
       {
         "command": "tds-monitor.toggle",
-        "title": "Monitorar",
+        "title": "Connectar",
         "category": "TDSMonitor",
         "icon": {
           "light": "resources/light/monitor.png",

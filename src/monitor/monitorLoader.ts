@@ -92,9 +92,9 @@ export class MonitorLoader {
     this._speed = v;
     if (this._speed === 0)
       {
-        vscode.window.showInformationMessage("A atualização ocorrerá por solicitação.");
+        vscode.window.showWarningMessage("A atualização ocorrerá por solicitação.");
       } else {
-        vscode.window.showInformationMessage(`A atualização ocorrerá a cada ${this._speed} segundos.`);
+        vscode.window.showWarningMessage(`A atualização ocorrerá a cada ${this._speed} segundos.`);
       }
       this._panel.webview.postMessage({
         command: MonitorPanelAction._SetSpeedUpdate,
@@ -173,7 +173,7 @@ export class MonitorLoader {
           }
         })
         .then((response: any) => {
-          vscode.window.showInformationMessage(response.message);
+          vscode.window.showWarningMessage(response.message);
         },
           ((error: Error) => {
             vscode.window.showErrorMessage(error.message);
@@ -195,7 +195,7 @@ export class MonitorLoader {
           }
         })
         .then((response: any) => {
-          vscode.window.showInformationMessage(response.message);
+          vscode.window.showWarningMessage(response.message);
         },
           ((error: Error) => {
             vscode.window.showErrorMessage(error.message);
@@ -218,7 +218,7 @@ export class MonitorLoader {
           }
         })
         .then((response: any) => {
-          vscode.window.showInformationMessage(response.message);
+          vscode.window.showWarningMessage(response.message);
         },
           ((error: Error) => {
             vscode.window.showErrorMessage(error.message);
@@ -334,7 +334,7 @@ export class MonitorLoader {
 
     const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
     const configJson = JSON.stringify({ serverList: serverList, speed: this._speed });
-console.log(vscode.ThemeColor.name);
+
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -362,6 +362,5 @@ console.log(vscode.ThemeColor.name);
 }
 
 function updateScheduledUsers(monitor: MonitorLoader, scheduler: boolean) {
-  vscode.window.showInformationMessage("Monitor atualizado.");
   monitor.updateUsers(scheduler);
 }

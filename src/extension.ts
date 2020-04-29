@@ -42,14 +42,14 @@ export async function activate(context: vscode.ExtensionContext) {
   let viewServer = new MonitorsExplorer(context);
   if (!viewServer) {
     window
-      .showInformationMessage("Não foi possível inicializar visão 'TOTVS Monitor'."
+      .showErrorMessage("Não foi possível inicializar visão 'TOTVS Monitor'."
       );
   }
 
   //Mostra a pagina de Boas Vindas.
   showWelcomePage();
   console.log('Congratulations, your extension "totvs-monitor" is now active!');
-  window.showInformationMessage(
+  window.showWarningMessage(
     'The extension "totvs-monitor" is now active!'
   );
 }

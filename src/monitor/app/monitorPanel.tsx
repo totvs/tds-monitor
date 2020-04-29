@@ -177,11 +177,6 @@ interface ITitleProps {
   subtitle: string;
 }
 
-interface IRowData extends IMonitorUser {
-  parent?: string;
-  count?: number;
-}
-
 function Title(props: ITitleProps) {
   const style = useToolbarStyles();
 
@@ -225,42 +220,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
         case MonitorPanelAction.UpdateUsers: {
           const result = message.data as IMonitorUser[];
 
-          const servers: IRowData[] = [];
-
-          result.forEach((user: IMonitorUser) => {
-            let pos = servers.findIndex((value: IMonitorUser) => {
-              return user.server === "_" + value.server;
-            });
-
-            if (pos === -1) {
-              const server: IRowData = {
-                username: "",
-                computerName: "",
-                threadId: 0,
-                server: "_" + user.server,
-                mainName: "",
-                environment: "Sessões",
-                loginTime: "",
-                elapsedTime: "",
-                totalInstrCount: 0,
-                instrCountPerSec: 0,
-                remark: "",
-                memUsed: 0,
-                sid: "",
-                ctreeTaskId: 0,
-                clientType: "",
-                inactiveTime: "",
-                count: 0,
-              };
-              pos = servers.push(server) - 1;
-            }
-            servers[pos].count = servers[pos].count + 1;
-            servers[pos].username = Number(servers[pos].count).toString();
-
-            servers.push({ ...user, parent: servers[pos].server });
-          });
-
-          setRows(servers);
+          setRows(result);
           setSubtitle(result.length);
           break;
         }
@@ -541,7 +501,7 @@ export default function MonitorPanel(props: IMonitorPanel) {
   return (
     <ErrorBoundary>
       <MonitorTheme>
-        <Paper>
+        <Paper variant="outlined">
           <MaterialTable
             icons={tableIcons}
             columns={headCells}
@@ -558,9 +518,6 @@ export default function MonitorPanel(props: IMonitorPanel) {
               padding: "dense",
               actionsColumnIndex: 0,
             }}
-            parentChildData={(row, rows) =>
-              rows.find((a) => a.server === row.parent)
-            }
             onSelectionChange={(rows) => setSelected(rows)}
             onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
             actions={actions}
