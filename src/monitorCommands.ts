@@ -77,7 +77,7 @@ export class ServerCommands {
                                 });
                         } else {
                             console.log(reason);
-                            vscode.window.showErrorMessage(reason);
+                            //vscode.window.showErrorMessage(reason);
                         }
                     });
         } else {

@@ -23,7 +23,7 @@ export default function MonitorTheme(props: IMonitorThemeProps) {
         overrides: {
           MuiPaper: {
             root: {
-              backgroundColor: '#pci',
+              backgroundColor: '#FDFDFD',
               padding: 12,
             },
             outlined: {
@@ -32,6 +32,11 @@ export default function MonitorTheme(props: IMonitorThemeProps) {
               borderLeftColor: '#EA9B3E'
             },
           },
+          MuiDialog: {
+            paper: {
+              backgroundColor: '#FDFDFD'
+            }
+          }
         },},
       ),
     [darkMode],
