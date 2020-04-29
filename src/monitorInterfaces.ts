@@ -20,7 +20,6 @@ export interface IMonitorItem {
   reconnectToken: any;
   parent: string;
   id: string;
-  type: string;
   name: string;
   port: number;
   address: string;

@@ -140,11 +140,6 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
     return !(getError(target, "_no_error_") === "_no_error_");
   };
 
-  const serverTypes = [
-    { label: "Protheus", value: "protheus" },
-    { label: "Logix", value: "logix" },
-  ];
-
   const handleButton = (event: React.MouseEvent<HTMLInputElement>) => {
     setValidateVersion(true);
 
@@ -209,25 +204,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
                 ),
               }}
             />
-
-            <Grid item xs={3}>
-              <TextField
-                name="type"
-                select
-                label="Tipo"
-                fullWidth
-                value={state.type}
-                onChange={handleChange}
-                helperText="Selecione o tipo de aplicação servidora."
-              >
-                {serverTypes.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={9}>
+            <Grid item xs={12}>
               <TextField
                 error={isError("name")}
                 name="name"

@@ -4,5 +4,6 @@ export interface IWelcomePageAction {
 }
 
 export enum WelcomePageAction {
-  Save
+  Save,
+  ExecuteCommand
 }

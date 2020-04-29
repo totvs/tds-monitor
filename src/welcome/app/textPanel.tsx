@@ -2,29 +2,32 @@ import * as React from "react";
 import Typography from "@material-ui/core/Typography";
 import { Link, ListItem, List } from "@material-ui/core";
 
-export default function TextPanel() {
-  const newServer = () => {};
-  const connectServer = () => {};
-  const showMonitor = () => {};
+interface ITextPanelProps {
+  onNewServer: any;
+  onConnectServer: any;
+  onShowMonitor: any;
+}
+
+export default function TextPanel(props: ITextPanelProps) {
 
   return (
     <React.Fragment>
       <Typography variant="subtitle2" component="h3">
-        Começar
+        <strong>Começar</strong>
       </Typography>
       <List>
         <ListItem>
-          <Link href="#" onClick={newServer}>
+          <Link href="#" onClick={props.onNewServer}>
             Novo servidor...
           </Link>
         </ListItem>
         <ListItem>
-          <Link href="#" onClick={connectServer}>
+          <Link href="#" onClick={props.onConnectServer}>
             Conectar a um servidor...
           </Link>
         </ListItem>
         <ListItem>
-          <Link href="#" onClick={showMonitor}>
+          <Link href="#" onClick={props.onShowMonitor}>
             Monitorar
           </Link>
         </ListItem>

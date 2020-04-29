@@ -8,7 +8,11 @@ import {
 } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import { WriteLogIcon, DisconnectIcon, GroupingIcon } from "../../helper/monitorIcons";
+import {
+  WriteLogIcon,
+  DisconnectIcon,
+  GroupingIcon,
+} from "../../helper/monitorIcons";
 import { MonitorPanelAction, IMonitorPanelAction } from "../actions";
 import IMonitorUser from "../monitorUser";
 import SendMessageDialog from "./sendMessageDialog";
@@ -45,6 +49,8 @@ import UnlockServerDialog from "./unlockServerDialog";
 import DisconnectUserDialog from "./disconnectUserDialog";
 import { IMonitorItem } from "../../monitorInterfaces";
 import SpeedUpdateDialogDialog from "./speedUpdateDialog";
+import MonitorTheme from "../../helper/theme";
+import ErrorBoundary from "../../helper/errorBoundary";
 
 const tableIcons = {
   Add: React.forwardRef<SVGSVGElement>((props, ref) => (
@@ -171,14 +177,19 @@ interface ITitleProps {
   subtitle: string;
 }
 
+interface IRowData extends IMonitorUser {
+  parent?: string;
+  count?: number;
+}
+
 function Title(props: ITitleProps) {
   const style = useToolbarStyles();
 
   return (
-    <React.Fragment>
+    <ErrorBoundary>
       <span className={style.title}>{props.title}</span>{" "}
       <span className={style.subtitle}>{props.subtitle}</span>
-    </React.Fragment>
+    </ErrorBoundary>
   );
 }
 
@@ -214,7 +225,42 @@ export default function MonitorPanel(props: IMonitorPanel) {
         case MonitorPanelAction.UpdateUsers: {
           const result = message.data as IMonitorUser[];
 
-          setRows(result);
+          const servers: IRowData[] = [];
+
+          result.forEach((user: IMonitorUser) => {
+            let pos = servers.findIndex((value: IMonitorUser) => {
+              return user.server === "_" + value.server;
+            });
+
+            if (pos === -1) {
+              const server: IRowData = {
+                username: "",
+                computerName: "",
+                threadId: 0,
+                server: "_" + user.server,
+                mainName: "",
+                environment: "Sessões",
+                loginTime: "",
+                elapsedTime: "",
+                totalInstrCount: 0,
+                instrCountPerSec: 0,
+                remark: "",
+                memUsed: 0,
+                sid: "",
+                ctreeTaskId: 0,
+                clientType: "",
+                inactiveTime: "",
+                count: 0,
+              };
+              pos = servers.push(server) - 1;
+            }
+            servers[pos].count = servers[pos].count + 1;
+            servers[pos].username = Number(servers[pos].count).toString();
+
+            servers.push({ ...user, parent: servers[pos].server });
+          });
+
+          setRows(servers);
           setSubtitle(result.length);
           break;
         }
@@ -493,58 +539,63 @@ export default function MonitorPanel(props: IMonitorPanel) {
   });
 
   return (
-    <React.Fragment>
-      <Paper>
-        <MaterialTable
-          icons={tableIcons}
-          columns={headCells}
-          data={rows}
-          title={
-            <Title title={"Monitor"} subtitle={"Monitorados: " + subtitle} />
+    <ErrorBoundary>
+      <MonitorTheme>
+        <Paper>
+          <MaterialTable
+            icons={tableIcons}
+            columns={headCells}
+            data={rows}
+            title={
+              <Title title={"Monitor"} subtitle={"Monitorados: " + subtitle} />
+            }
+            options={{
+              selection: true,
+              grouping: grouping,
+              filtering: filtering,
+              exportButton: false,
+              exportCsv: () => {},
+              padding: "dense",
+              actionsColumnIndex: 0,
+            }}
+            parentChildData={(row, rows) =>
+              rows.find((a) => a.server === row.parent)
+            }
+            onSelectionChange={(rows) => setSelected(rows)}
+            onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
+            actions={actions}
+          />
+        </Paper>
+
+        <SendMessageDialog
+          open={openDialog.sendMessage}
+          recipients={
+            selected.length > 0 ? selected : targetRow ? targetRow : rows
           }
-          options={{
-            selection: true,
-            grouping: grouping,
-            filtering: filtering,
-            exportButton: false,
-            exportCsv: () => {},
-            padding: "dense",
-            actionsColumnIndex: 0,
-          }}
-          onSelectionChange={(rows) => setSelected(rows)}
-          onRowClick={(evt, selectedRow) => this.setState({ selectedRow })}
-          actions={actions}
+          onClose={doSendMessage}
         />
-      </Paper>
 
-      <SendMessageDialog
-        open={openDialog.sendMessage}
-        recipients={
-          selected.length > 0 ? selected : targetRow ? targetRow : rows
-        }
-        onClose={doSendMessage}
-      />
+        <DisconnectUserDialog
+          open={openDialog.disconnectUser}
+          recipients={selected.length === 0 ? rows : selected}
+          onClose={doDisconnectUser}
+        />
 
-      <DisconnectUserDialog
-        open={openDialog.disconnectUser}
-        recipients={selected.length === 0 ? rows : selected}
-        onClose={doDisconnectUser}
-      />
+        <StopServerDialog open={openDialog.stopServer} onClose={doStopServer} />
 
-      <StopServerDialog open={openDialog.stopServer} onClose={doStopServer} />
+        <LockServerDialog open={openDialog.lockServer} onClose={doLockServer} />
 
-      <LockServerDialog open={openDialog.lockServer} onClose={doLockServer} />
+        <UnlockServerDialog
+          open={openDialog.unlockServer}
+          onClose={doUnlockServer}
+        />
 
-      <UnlockServerDialog
-        open={openDialog.unlockServer}
-        onClose={doUnlockServer}
-      />
-
-      <SpeedUpdateDialogDialog
-        speed={speed}
-        open={openDialog.speedUpdate}
-        onClose={doSpeedUpdate}
-      />
-    </React.Fragment>
+        <SpeedUpdateDialogDialog
+          speed={speed}
+          open={openDialog.speedUpdate}
+          onClose={doSpeedUpdate}
+        />
+      </MonitorTheme>
+    </ErrorBoundary>
   );
 }

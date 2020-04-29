@@ -5,7 +5,8 @@ import {
   FormControlLabel,
   Checkbox,
   TextField,
-  MenuItem} from "@material-ui/core";
+  MenuItem,
+} from "@material-ui/core";
 import { IWelcomePageAction, WelcomePageAction } from "../actions";
 
 interface ISettingsPanelProps {
@@ -19,24 +20,21 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
   const [state, setState] = React.useState({
     showWelcomePage: props.showWelcomePage,
     serverJsonLocation: props.serverJsonLocation,
-    optionsLocation: props.optionsLocation
+    optionsLocation: props.optionsLocation,
   });
 
   const locationOptions = [
     { value: "user", label: props.optionsLocation.userFile },
-    { value: "user_monitor", label: props.optionsLocation.monitorFile }
+    { value: "user_monitor", label: props.optionsLocation.monitorFile },
   ];
 
   const saveData = (data: any) => {
-    console.log("saveData");
-
     let command: IWelcomePageAction = {
       action: WelcomePageAction.Save,
-      content: data
+      content: data,
     };
 
     props.vscode.postMessage(command);
-
   };
 
   const handleShowWelcomeChange = (
@@ -60,7 +58,7 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
   return (
     <React.Fragment>
       <Typography variant="subtitle2" component="h3">
-        Configurações Atuais
+        <strong>Configurações Atuais</strong>
       </Typography>
 
       <FormGroup row>
@@ -71,7 +69,7 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
           onChange={handleServerLocationChange}
           helperText="Indica qual arquivo de definição de servidores em uso."
         >
-          {locationOptions.map(option => (
+          {locationOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
             </MenuItem>
@@ -87,7 +85,7 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
               onChange={handleShowWelcomeChange}
             />
           }
-          label="Apresentar Boas vindas ao iniciar"
+          label="Apresentar esta página ao iniciar a extensão."
         />
       </FormGroup>
     </React.Fragment>

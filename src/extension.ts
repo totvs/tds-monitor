@@ -42,21 +42,21 @@ export async function activate(context: vscode.ExtensionContext) {
   let viewServer = new MonitorsExplorer(context);
   if (!viewServer) {
     window
-      .showInformationMessage("Não foi possível inicializar visão 'TDS Monitor'."
+      .showInformationMessage("Não foi possível inicializar visão 'TOTVS Monitor'."
       );
   }
 
   //Mostra a pagina de Boas Vindas.
   showWelcomePage();
-  console.log('Congratulations, your extension "tds-monitor" is now active!');
+  console.log('Congratulations, your extension "totvs-monitor" is now active!');
   window.showInformationMessage(
-    'The extension "tds-monitor" is now active!'
+    'The extension "totvs-monitor" is now active!'
   );
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {
-  console.log('Thank you for using our extension "tds-monitor"!\nBye!!');
+  console.log('Thank you for using our extension "totvs-monitor"!\nBye!!');
 
   //Utils.deleteSelectServer();
 }

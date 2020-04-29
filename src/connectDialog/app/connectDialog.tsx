@@ -146,13 +146,6 @@ export default function ConnectDialog(props: IConnectDialogProps) {
     return !(getError(target, "_no_error_") === "_no_error_");
   };
 
-  const serverTypes = [
-    { label: "Protheus", value: "protheus" },
-    { label: "Logix", value: "logix" },
-    { label: "Protheus", value: "totvs_server_protheus" },
-    { label: "Logix", value: "totvs_server_logix" },
-  ];
-
   const folders = [{ label: "<servidores>", value: "/" }];
   const environments = [];
   state.environments.forEach((value, index) => {
@@ -175,196 +168,169 @@ export default function ConnectDialog(props: IConnectDialogProps) {
 
   return (
     <ErrorBoundary>
-      <React.Fragment>
-        <MonitorTheme>
-          <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="menu" disabled>
-              <ServerIcon />
-            </IconButton>
-            <Typography variant="subtitle1">
-              Informe suas credencias de acesso.
-            </Typography>
-          </Toolbar>
-          <Grid container spacing={0}>
-            <Grid item xs={12}>
-              {!isAddEnvironment ? (
-                <TextField
-                  name="environment"
-                  select
-                  label="Ambiente"
-                  value={state.environment}
-                  fullWidth
-                  disabled={isAuthenticating}
-                  onChange={handleChange}
-                  helperText={"Selecione o ambiente alvo."}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment
-                        position="end"
-                        onClick={toggleEnvinroment}
-                      >
-                        <AddIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                >
-                  {environments.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              ) : (
-                <TextField
-                  name="environment"
-                  label="Ambiente"
-                  value={state.environment}
-                  fullWidth
-                  disabled={isAuthenticating}
-                  onChange={handleChange}
-                  helperText={"Informe o ambiente alvo."}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment
-                        position="end"
-                        onClick={toggleEnvinroment}
-                      >
-                        <KeyboardIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              )}
-            </Grid>
-
-            <Grid item xs={4}>
+      <MonitorTheme>
+        <Toolbar>
+          <IconButton edge="start" color="inherit" aria-label="menu" disabled>
+            <ServerIcon />
+          </IconButton>
+          <Typography variant="subtitle1">
+            Informe suas credencias de acesso.
+          </Typography>
+        </Toolbar>
+        <Grid container spacing={0}>
+          <Grid item xs={12}>
+            {!isAddEnvironment ? (
               <TextField
-                name="username"
-                label="Usuário"
-                value={credential.username}
-                error={isError("username")}
-                helperText={getError("username", "Usuário do Protheus")}
-                onChange={handleChange}
-                fullWidth
-                disabled={isAuthenticating}
-              />
-            </Grid>
-            <Grid item xs={1}>
-            </Grid>
-            <Grid item xs={4}>
-              <TextField
-                name="password"
-                label="Senha"
-                value={credential.password}
-                type="password"
-                error={isError("password")}
-                helperText={getError("password", "Senha de acesso")}
-                onChange={handleChange}
-                fullWidth
-                disabled={isAuthenticating}
-              />
-            </Grid>
-            <Grid item xs={1}>
-            </Grid>
-            <Grid item xs={2}>
-              <Button
-                style={{ marginTop: 20 }}
-                size="large"
-                disabled={isError("username") || isAuthenticating}
-                onClick={handleButton}
-                startIcon={<CheckIcon />}
-                fullWidth
-              >
-                {isAuthenticating ? (
-                  <React.Fragment>
-                    <Typography>Autenticando... </Typography>
-                    <Fade
-                      in={true}
-                      style={{
-                        transitionDelay: "800ms",
-                      }}
-                      unmountOnExit
-                    >
-                      <CircularProgress />
-                    </Fade>
-                  </React.Fragment>
-                ) : (
-                  <Typography>Autenticar</Typography>
-                )}
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                name="parent"
+                name="environment"
                 select
-                label="Destino"
-                value={state.parent}
-                disabled
+                label="Ambiente"
+                value={state.environment}
                 fullWidth
+                disabled={isAuthenticating}
+                onChange={handleChange}
+                helperText={"Selecione o ambiente alvo."}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end" onClick={toggleEnvinroment}>
+                      <AddIcon />
+                    </InputAdornment>
+                  ),
+                }}
               >
-                {folders.map((option) => (
+                {environments.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
               </TextField>
-            </Grid>
-            <Grid item xs={2}>
+            ) : (
               <TextField
-                name="type"
-                select
-                label="Tipo"
-                value={state.type}
-                disabled
+                name="environment"
+                label="Ambiente"
+                value={state.environment}
                 fullWidth
-              >
-                {serverTypes.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={10}>
-              <TextField
-                name="name"
-                label="Nome"
-                fullWidth
-                value={state.name}
-                disabled
+                disabled={isAuthenticating}
+                onChange={handleChange}
+                helperText={"Informe o ambiente alvo."}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end" onClick={toggleEnvinroment}>
+                      <KeyboardIcon />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                type="uri"
-                name="address"
-                label="Endereço"
-                value={state.address}
-                disabled
-                fullWidth
-                inputProps={secureIndicator}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <TextField
-                name="port"
-                label="Porta"
-                type="number"
-                value={state.port}
-                disabled
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <TextField
-                name="buildVersion"
-                label="Versão"
-                value={state.buildVersion}
-                disabled
-              />
-            </Grid>
+            )}
           </Grid>
-        </MonitorTheme>
-      </React.Fragment>
+
+          <Grid item xs={4}>
+            <TextField
+              name="username"
+              label="Usuário"
+              value={credential.username}
+              error={isError("username")}
+              helperText={getError("username", "Usuário do Protheus")}
+              onChange={handleChange}
+              fullWidth
+              disabled={isAuthenticating}
+            />
+          </Grid>
+          <Grid item xs={1}></Grid>
+          <Grid item xs={4}>
+            <TextField
+              name="password"
+              label="Senha"
+              value={credential.password}
+              type="password"
+              error={isError("password")}
+              helperText={getError("password", "Senha de acesso")}
+              onChange={handleChange}
+              fullWidth
+              disabled={isAuthenticating}
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              style={{ marginTop: 20 }}
+              size="large"
+              disabled={isError("username") || isAuthenticating}
+              onClick={handleButton}
+              startIcon={<CheckIcon />}
+              fullWidth
+            >
+              {isAuthenticating ? (
+                <React.Fragment>
+                  <Typography>Autenticando... </Typography>
+                  <Fade
+                    in={true}
+                    style={{
+                      transitionDelay: "800ms",
+                    }}
+                    unmountOnExit
+                  >
+                    <CircularProgress />
+                  </Fade>
+                </React.Fragment>
+              ) : (
+                <Typography>Autenticar</Typography>
+              )}
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="parent"
+              select
+              label="Destino"
+              value={state.parent}
+              disabled
+              fullWidth
+            >
+              {folders.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="name"
+              label="Nome"
+              fullWidth
+              value={state.name}
+              disabled
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              type="uri"
+              name="address"
+              label="Endereço"
+              value={state.address}
+              disabled
+              fullWidth
+              inputProps={secureIndicator}
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <TextField
+              name="port"
+              label="Porta"
+              type="number"
+              value={state.port}
+              disabled
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <TextField
+              name="buildVersion"
+              label="Versão"
+              value={state.buildVersion}
+              disabled
+            />
+          </Grid>
+        </Grid>
+      </MonitorTheme>
     </ErrorBoundary>
   );
 }

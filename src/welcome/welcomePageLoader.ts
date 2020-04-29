@@ -95,6 +95,10 @@ export class WelcomePageLoader {
 
         break;
       }
+      case WelcomePageAction.ExecuteCommand: {
+        vscode.commands.executeCommand(command.content);
+        break;
+      }
       default:
         console.log("***** ATENÇÃO: welcomePageLoader.tsx");
         console.log("\tComando não reconhecido: " + command.action);

@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { addServerLoader } from './addServer/addServerLoader';
 import { toggleServerToMonitor } from './monitor/monitorLoader';
 import { connectDialogLoader } from './connectDialog/connectDialogLoader';
+import { showWelcomePage } from './welcome/welcomePageLoader';
 
 export class ServerCommands {
 
@@ -17,6 +18,8 @@ export class ServerCommands {
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.open.configuration', () => ServerCommands.openConfiguration(context)));
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.show-connect-dialog', async (serverItem: IMonitorItem) => ServerCommands.openConnectDialog(serverItem)));
+        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.showWelcomePage', () => ServerCommands.showWelcomePage()));
+
 
         //Comando para renomear item da visão de monitor.
         //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.rename', (serverItem: MonitorItem) => renameMonitor(serverItem)));
@@ -43,6 +46,10 @@ export class ServerCommands {
     private static openConnectDialog(serverItem: IMonitorItem) {
         const server: IMonitorItem = serverItem as IMonitorItem;
         connectDialogLoader(server);
+    }
+
+    private static showWelcomePage() {
+        showWelcomePage(true);
     }
 
     private static toggleMonitor(monitorItem: IMonitorItem) {

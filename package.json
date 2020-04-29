@@ -183,14 +183,14 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "tds-plataform",
-          "title": "TDS",
+          "id": "totvs-plataform",
+          "title": "TOTVS",
           "icon": "imagens/totvs24x24.png"
         }
       ]
     },
     "views": {
-      "tds-plataform": [
+      "totvs-plataform": [
         {
           "id": "tds_monitor",
           "name": "Monitor"

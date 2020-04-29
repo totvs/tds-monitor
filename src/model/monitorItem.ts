@@ -12,7 +12,6 @@ export class MonitorItem implements IMonitorItem {
 	//TODO: Adicionar árvore de pastas
 	parent: string = "/";
 	id: string = "";
-	type: string = "protheus";
 	name: string = "";
 	port: number = 0;
 	address: string = "";
@@ -87,7 +86,6 @@ export class MonitorItem implements IMonitorItem {
 			error("smartClient", message);
 		});
 
-		if (this.type === "") { error("type", ATT_REQ); }
 		if (this.name === "") { error("name", ATT_REQ); }
 		if (!(this.port > 0)) { error("port", ATT_REQ); }
 		if (this.address === "") { error("address", ATT_REQ); }
@@ -150,11 +148,8 @@ export class MonitorItem implements IMonitorItem {
 	public async connect(): Promise<boolean> {
 		const lsc = await getLanguageClient();
 
-		const type: number = (this.type === "totvs_server_protheus") ? 1 :
-			(this.type === "protheus") ? 1 : 2;
-
 		const request = await lsc
-			.connect(13, type, this.id, this.name, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
+			.connect(13, 1, this.id, this.name, this.address, parseInt("" + this.port), this.environment, this.buildVersion, this.secure)
 			.then((value: any) => {
 				this.token = value.token;
 				this.needAuthentication = value.needAuthentication;
@@ -254,12 +249,12 @@ export class TreeMonitorItem extends vscode.TreeItem {
 	}
 
 	get tooltip(): string {
-		return `${this.serverItem.address}:${this.serverItem.port} (${this.serverItem.type}${this.serverItem.secure ? ",SSL" : ""})`;
+		return `${this.serverItem.address}:${this.serverItem.port} ${this.serverItem.secure ? "(SSL)" : ""}`;
 	}
 
-	get description(): string {
-		return `${this.serverItem.address}:${this.serverItem.port}`;
-	}
+	// get description(): string {
+	// 	return `${this.serverItem.address}:${this.serverItem.port}`;
+	// }
 
 	get sessions(): Array<any /*SessionSection*/> {
 		return this.listSessions;

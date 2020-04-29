@@ -57,7 +57,7 @@ class LsErrorHandler implements ErrorHandler {
 export function getLanguageClient(): Promise<MonitorLanguageClient> {
   if (!isNullOrUndefined(languageClient)) {
     if (languageClient.needsStart()) {
-      window.showInformationMessage("Iniciando 'manualmente'");
+      window.showInformationMessage("Iniciando AdvPL (Monitor)");
       languageClient.start();
     }
 

@@ -334,7 +334,7 @@ export class MonitorLoader {
 
     const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
     const configJson = JSON.stringify({ serverList: serverList, speed: this._speed });
-
+console.log(vscode.ThemeColor.name);
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -362,6 +362,6 @@ export class MonitorLoader {
 }
 
 function updateScheduledUsers(monitor: MonitorLoader, scheduler: boolean) {
-  vscode.window.showInformationMessage("Atualizando monitor.");
+  vscode.window.showInformationMessage("Monitor atualizado.");
   monitor.updateUsers(scheduler);
 }

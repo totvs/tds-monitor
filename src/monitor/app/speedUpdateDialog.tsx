@@ -53,7 +53,7 @@ export default function SpeedUpdateDialogDialog(props: SpeedUpdateDialogProps) {
       open={open}
       scroll="paper"
     >
-      <DialogTitle>Intervalos entre atualizações</DialogTitle>
+      <DialogTitle>Intervalo entre atualizações</DialogTitle>
       <DialogContent dividers={true}>
         <DialogContentText tabIndex={-1}>
           <FormGroup row>
