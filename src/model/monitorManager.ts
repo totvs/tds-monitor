@@ -316,23 +316,19 @@ class ServerManager {
   }
 
   getServerById(ID: string): IMonitorItem | undefined {
-    // serverManager.getServers().forEach(element => {
-    //   if (element.id === ID) {
-    //     return element as IMonitorItem;
-    //   }
-    // });
+    const result = this.getServers().find((element: IMonitorItem) => {
+      return (element.id === ID);
+    });
 
-    return undefined;
+    return result;
   }
 
   getServerByName(name: string): IMonitorItem | undefined {
-    // serverManager.getServers().forEach(element => {
-    //   if (element.name === name) {
-    //     return element;
-    //   }
-    // });
+    const result = this.getServers().find((element: IMonitorItem) => {
+      return (element.name === name);
+    });
 
-    return undefined;
+    return result;
   }
 
   rename(ID: string, newName: string): boolean {

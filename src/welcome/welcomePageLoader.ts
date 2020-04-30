@@ -1,6 +1,8 @@
+import { serverManager } from './../model/monitorManager';
 import * as vscode from "vscode";
 import * as path from "path";
 import { WelcomePageAction, IWelcomePageAction } from "./actions";
+import { IMonitorItem } from '../monitorInterfaces';
 
 export function showWelcomePage(forcedShow: boolean = false) {
   const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
@@ -96,7 +98,12 @@ export class WelcomePageLoader {
         break;
       }
       case WelcomePageAction.ExecuteCommand: {
-        vscode.commands.executeCommand(command.content);
+        if (command.arg) {
+          const server = serverManager.getServerByName(command.arg);
+          vscode.commands.executeCommand(command.content, server);
+        } else {
+          vscode.commands.executeCommand(command.content);
+        }
         break;
       }
       default:
@@ -106,10 +113,6 @@ export class WelcomePageLoader {
         break;
     }
   }
-
-  // const userFile = path.join(homedir, ".totvsls", "servers.json");
-  // const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
-  // const workspaceFile = "./monitor.json";
 
   private getWebviewContent(): string {
     // Local path to main script run in the webview
@@ -122,12 +125,26 @@ export class WelcomePageLoader {
       )
     );
 
+    const serverList: string[] = serverManager.getServers()
+      .filter((element: IMonitorItem) => (!element.isConnected()))
+      .map((element: IMonitorItem) => {
+        return element.name;
+      });
+
+    const connectedList: string[] = serverManager.getServers()
+      .filter((element: IMonitorItem) => (element.isConnected()))
+      .map((element: IMonitorItem) => {
+        return element.name;
+      });
+
     const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
     const initialData = JSON.stringify(
       {
         showWelcomePage: this.isShowWelcomePage(),
         serverJsonLocation: this.getServerJsonLocation(),
-        optionsLocation: this.getOptionsLocation()
+        optionsLocation: this.getOptionsLocation(),
+        serverList: serverList,
+        connectedList: connectedList
       });
 
     return `<!DOCTYPE html>
@@ -138,8 +155,8 @@ export class WelcomePageLoader {
         <title>Welcome Page</title>
 
         <meta http-equiv="Content-Security-Policy"
-                    content="default-src 'none';
-                             img-src https:;
+                    content="default-src 'self';
+                             img-src 'self' vscode-resource: data:;
                              script-src 'unsafe-eval' 'unsafe-inline' vscode-resource:;
                              style-src vscode-resource: 'unsafe-inline';">
 

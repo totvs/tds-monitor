@@ -1,6 +1,6 @@
-# TOTVS Developer Studio Monitor para VS-Code
+# TOTVS Monitor para VS-Code
 
-A extensão do **TOTVS Developer Studio Monitor para VS-Code (TDS Monitor)** disponibiliza as funcionalidades para monioramento
+A extensão do **TOTVS Monitor para VS-Code (TDS Monitor)** disponibiliza as funcionalidades para monioramento
 utilzando o protocolo de comunicação LSP (Language Server Protocol) que é extensível à outras IDEs de mercado, como Atom, Visual Studio, Eclipse, Eclipse Theia, Vim e Emacs.
 
 > [Lista de IDEs com suporte ao LSP](https://microsoft.github.io/language-server-protocol/implementors/tools).
@@ -19,4 +19,3 @@ utilzando o protocolo de comunicação LSP (Language Server Protocol) que é ext
 ### Conexão com servidores
 
 ### Apresentação de informações
-

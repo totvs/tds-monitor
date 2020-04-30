@@ -1,6 +1,6 @@
-# TOTVS Developer Studio Monitor
+# TOTVS Monitor
 
-A extensão **TOTVS Developer Studio Monitor disponibiliza as funcionalidades do antigo Totvs Monitor dentro do VScode.
+A extensão **TOTVS Monitor disponibiliza as funcionalidades do antigo Totvs Monitor dentro do VScode.
 Ele utiliza os protocolos de comunicação LSP (Language Server Protocol) que é extensível à outras IDEs de mercado, como Atom, Visual Studio, Eclipse, Eclipse Theia, Vim e Emacs.
 
 > [Lista de IDEs com suporte ao LSP](https://microsoft.github.io/language-server-protocol/implementors/tools).
