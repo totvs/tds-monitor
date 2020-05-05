@@ -24,8 +24,8 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
   });
 
   const locationOptions = [
-    { value: "user", label: props.optionsLocation.userFile },
-    { value: "user_monitor", label: props.optionsLocation.monitorFile },
+    { value: "serverFile", label: props.optionsLocation.serverFile },
+    { value: "monitorFile", label: props.optionsLocation.monitorFile },
   ];
 
   const saveData = (data: any) => {

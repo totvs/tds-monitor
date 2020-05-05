@@ -102,8 +102,8 @@
           "scope": "window",
           "type": "string",
           "enum": [
-            "user",
-            "user_monitor"
+            "server",
+            "monitor"
           ],
           "default": "user",
           "description": "Indica qual arquivo de definição de servidores a utilizar.",

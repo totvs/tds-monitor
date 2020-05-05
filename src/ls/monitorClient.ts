@@ -24,6 +24,7 @@ let languageClient: MonitorLanguageClient;
 import { WorkspaceConfiguration } from "vscode";
 import { Message } from "vscode-jsonrpc";
 import { CloseAction, ErrorAction, ErrorHandler } from "vscode-languageclient";
+import MonitorConfiguration from "../monitorConfiguration";
 
 class LsErrorHandler implements ErrorHandler {
   constructor(readonly config: WorkspaceConfiguration) { }
@@ -143,10 +144,7 @@ export function getLanguageClient(): Promise<MonitorLanguageClient> {
 
       syncSettings();
 
-      const configADVPL = vscode.workspace.getConfiguration(
-        "totvsLanguageServer"
-      );
-      const isReconnectLastServer = configADVPL.get("reconnectLastServer");
+      const isReconnectLastServer = MonitorConfiguration.isReconnectLastServer();
       if (isReconnectLastServer) {
         reconnectLastServer();
       }

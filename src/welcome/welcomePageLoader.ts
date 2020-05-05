@@ -3,10 +3,10 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { WelcomePageAction, IWelcomePageAction } from "./actions";
 import { IMonitorItem } from '../monitorInterfaces';
+import MonitorConfiguration from '../monitorConfiguration';
 
 export function showWelcomePage(forcedShow: boolean = false) {
-  const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
-  let isShowWelcomePage = config.get('welcomePage');
+  let isShowWelcomePage = MonitorConfiguration.isShowWelcomePage();
 
   if (isShowWelcomePage || forcedShow) {
     const loader = new WelcomePageLoader();
@@ -60,31 +60,23 @@ export class WelcomePageLoader {
   }
 
   private setShowWelcomePage(show: boolean): void {
-    const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
-    config.update("welcomePage", show);
+    MonitorConfiguration.setShowWelcomePage(show);
   }
 
   private isShowWelcomePage(): boolean {
-    const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
-    return config.get("welcomePage", true);
+    return MonitorConfiguration.isShowWelcomePage();
   }
 
   private getServerJsonLocation(): string {
-    const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
-    return config.get("servers.json", "user");
+    return MonitorConfiguration.getServerJsonLocation();
   }
 
   private setServerJsonLocation(value: string) {
-    const config = vscode.workspace.getConfiguration('tdsMonitor');//transformar em configuracao de workspace
-    return config.update("servers.json", value);
+    return MonitorConfiguration.setServerJsonLocation(value);
   }
 
   private getOptionsLocation(): any {
-    const homedir = require("os").homedir();
-    const userFile = path.join(homedir, ".totvsls", "servers.json");
-    const monitorFile = path.join(homedir, ".totvsls", "monitor.json");
-
-    return { userFile: userFile, monitorFile: monitorFile };
+    return MonitorConfiguration.getOptionsLocation();
   }
 
   private async handleMessage(command: IWelcomePageAction) {

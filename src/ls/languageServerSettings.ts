@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import MonitorConfiguration from "../monitorConfiguration";
 
 export async function syncSettings() {
   // no momento, o TDS Monitor não precisa sincrozinar nada com o server
@@ -35,7 +36,7 @@ function resolveVariables(value: any): any {
 export function getClientConfig() {
   let configMapping = [["launchArgs", "launch.args"]];
   let clientConfig: any = {};
-  let config = vscode.workspace.getConfiguration("totvsLanguageServer");
+  let config = MonitorConfiguration.getTotvsLanguageServer();
 
   for (let prop of configMapping) {
     let value = config.get(prop[1]);
@@ -80,8 +81,4 @@ export function isConfigurationChanged(): boolean {
   }
 
   return result;
-}
-
-export function getAdvPlConfig(): vscode.WorkspaceConfiguration {
-  return vscode.workspace.getConfiguration("AdvPL"); //TODO: classe
 }
