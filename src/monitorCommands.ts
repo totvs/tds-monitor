@@ -56,31 +56,35 @@ export class ServerCommands {
         let server: IMonitorItem = monitorItem;
 
         if (!server.isConnected()) {
-            server
-                .reconnect()
-                .then(
-                    (value) => {
-                        vscode.window.showInformationMessage("Reconexão efetuada.");
-                    }, (reason) => {
-                        if (reason['code'] === 4081) {
-                            server.connect().then(
-                                (value) => {
-                                    vscode.window.showInformationMessage("Conexão efetuada.");
-                                    return value;
-                                }).then((value: any) => {
-                                    if (value && server.needAuthentication) {
-                                        vscode.commands.executeCommand('tds-monitor.show-connect-dialog', server);
-                                    } else {
-                                        vscode.commands.executeCommand('tds-monitor.add-server-monitor', server);
-                                    }
-                                }).catch((reason) => {
-                                });
-                        } else {
-                            console.log(reason);
-                            //vscode.window.showErrorMessage(reason);
-                        }
-                    });
+            vscode.window.setStatusBarMessage(`Aguarde. Conectando-se ao servidor ${server.name}`,
+                server.reconnect()
+                    .then(
+                        (value) => {
+                            vscode.window.showInformationMessage("Reconexão efetuada.");
+                        }, (reason) => {
+                            if ((reason['code'] === 4081) || (reason['code'] === 4086)) {
+                                server.connect().then(
+                                    (value) => {
+                                        vscode.window.showInformationMessage("Conexão efetuada.");
+                                        return value;
+                                    }).then((value: any) => {
+                                        if (value && server.needAuthentication) {
+                                            vscode.commands.executeCommand('tds-monitor.show-connect-dialog', server);
+                                        } else {
+                                            vscode.commands.executeCommand('tds-monitor.add-server-monitor', server);
+                                        }
+                                    }).catch((reason) => {
+                                        console.log(reason);
+                                        vscode.window.showErrorMessage(reason);
+                                    });
+                            } else {
+                                console.log(reason);
+                                vscode.window.showErrorMessage(reason);
+                            }
+                        })
+            );
         } else {
+            vscode.window.setStatusBarMessage(`Aguarde. Iniciando monitoramento ${server.name}`, 10000);
             toggleServerToMonitor(server);
         }
     }

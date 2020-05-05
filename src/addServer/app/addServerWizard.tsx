@@ -175,7 +175,7 @@ export default function AddServerWizard(props: IAddServerWizardProps) {
                 onChange={handleChange}
                 helperText={getError(
                   "parent",
-                  "Selecione a pasta para melhorar a organização."
+                  "Selecione a pasta destino."
                 )}
                 disabled
                 fullWidth

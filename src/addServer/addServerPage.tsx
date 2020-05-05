@@ -35,15 +35,16 @@ export const addServerHtml = (d) => (`
 				</div>
 
 				<div class="wrap-input">
-					<input class="inputText input-port" type="number" id="portID" name="port" pattern="[0-9]{5}" placeholder="${d.localize['tds.webview.newServer.port']}" required><!--Port-->
+					<input class="inputText input-port" type="number" id="portID" name="port" pattern="[0-9]{5}"
+					placeholder="${d.localize['tds.webview.newServer.port']}" required><!--Port-->
 					<span class="focus-input fi-port">
 					</span>
 				</div>
 
-				<p>${d.localize["tds.webview.dir.include"]}<b>*${d.localize["tds.webview.dir.include2"]}</b></p><!--Includes directory:--><!--Allows multiple-->
 				<div class="wrap-input">
-					<textarea class="inputText" id="includePath" placeholder="Ex: C:/totvs/includes..."></textarea>
-					<input class="inputText" type="file" id="btn-FileInclude" name="btn-FileInclude" onchange='chfillData(event);' webkitdirectory directory multiple/>
+					<input class="inputText" id="environment"
+					placeholder="${d.localize['tds.webview.newServer.environment']}" name="environment" required/>
+					<span class="focus-input fi-environment">
 				</div>
 
 				<br>
@@ -60,26 +61,11 @@ export const addServerHtml = (d) => (`
 <script>
 	const vscode = acquireVsCodeApi();
 
-// Carrega path das pastas include
-	function chfillData(event){
-	  var input = event.target;
-      var reader = new FileReader();
-
-	  if (includePath.value=="" || includePath.value=="C:/totvs/includes")
-		includePath.value = input.files[0].path;
-	  else
-	  	includePath.value = includePath.value + ";" + input.files[0].path;
-
-
-      reader.readAsBinaryString(input.files[0]);
-	};
-
-
 	function saveServer(close) {
 		const addressID = document.getElementById('addressID').value;
 		const serverNameID = document.getElementById('nameID').value;
 		const portID = document.getElementById('portID').value;
-		const includePath = document.getElementById('includePath').value.split(";");
+		const environment = document.getElementById('environment').value;
 
 		vscode.postMessage({
 			command: 'saveServer',
@@ -87,7 +73,7 @@ export const addServerHtml = (d) => (`
 			serverName: serverNameID,
 			port: portID,
 			'close': close,
-			includes: includePath
+			environment: environment
 		});
 	}
 </script>

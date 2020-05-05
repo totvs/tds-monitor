@@ -23,8 +23,7 @@ const localizeHTML = {
   "tds.webview.newServer.save": localize("tds.webview.newServer.save", "Save"),
   "tds.webview.newServer.saveClose": localize("tds.webview.newServer.saveClose", "Save/Close"),
   "tds.webview.newServer.secure": localize("tds.webview.newServer.secure", "Secure(SSL)"),
-  "tds.webview.dir.include": localize("tds.webview.dir.include", "Includes directory"),
-  "tds.webview.dir.include2": localize("tds.webview.dir.include2", "Allow multiple directories")
+  "tds.webview.newServer.environment": localize("tds.webview.newServer.environment", "Initial connection environment")
 };
 
 class AddServerLoader {
@@ -73,30 +72,15 @@ class AddServerLoader {
 
     switch (message.command) {
       case 'saveServer':
-        if (message.serverName && message.port && message.address) {
+        if (message.serverName && message.port && message.address && message.environment) {
           this.validade({
             name: message.serverName,
             port: message.port,
-            address: message.address
-
-            // needAuthentication: any;
-            // reconnectToken: any;
-            // parent: string;
-            // id: string;
-            // buildVersion: string;
-            // secure: boolean;
-            // includes: string[];
-            // environments: string[];
-            // smartClient: string;
-            // token: string;
-            // environment: string;
-            // errors: IError[];
-            // username: string;
-            // password: string;
+            address: message.address,
+            environment: message.environment
           });
-          serverManager.add(this._server);
         } else {
-          vscode.window.showErrorMessage(localize("tds.webview.serversView.addServerFail", "Add Server Fail. Name, port and Address are need"));
+          vscode.window.showErrorMessage(localize("tds.webview.serversView.addServerFail", "Add Server Fail. Name, port, address and environment are need"));
         }
 
         if (message.close) {
@@ -104,77 +88,24 @@ class AddServerLoader {
             this._panel.dispose();
           }
         }
-
-      // switch (command.action) {
-      //   case AddServerAction.UpdateModel:
-      //     this.updateModel(command.content);
-      //     break;
-      //   case AddServerAction.Validate:
-      //     this.validade(command.content);
-      //     break;
-      //   case AddServerAction.SelectSmartClient:
-      //     this.selectSmartClient(command.content);
-      //     break;
-      //   case AddServerAction.Close:
-      //     this._panel.dispose();
-      //     break;
-      //   case AddServerAction.SaveAndClose:
-      //     serverManager.add(this._server);
-      //     this._panel.dispose();
-      //     break;
-      // }
     }
   }
 
-  // private selectSmartClient(smartClientPath: string) {
-  //   let openDialogOptions: vscode.OpenDialogOptions = {
-  //     canSelectFiles: true,
-  //     canSelectFolders: false,
-  //     canSelectMany: false,
-  //     openLabel: "Aplicação SmartClient",
-  //     defaultUri: vscode.Uri.parse("file:///" + smartClientPath),
-  //     filters: {
-  //       SmartClient: ["exe"],
-  //       AllFiles: ["*"]
-  //     }
-  //   };
-
-  //   vscode.window
-  //     .showOpenDialog(openDialogOptions)
-  //     .then(async (uri: vscode.Uri[] | undefined) => {
-  //       if (uri && uri.length > 0) {
-  //         this.updateModel({ smartClient: uri[0].fsPath });
-  //       } else {
-  //         vscode.window.showErrorMessage("No valid SmartClient file selected!");
-  //       }
-  //     });
-  // }
-
-
-  // private updateModel(content: any) {
-  //   let needUpdate: boolean = false;
-
-  //   this._server.updateProperties(content)
-  //     .then((update) => {
-  //       needUpdate = update;
-  //     }).catch((r) => {
-  //       console.log(r);
-  //     }).finally(() => {
-  //       if (needUpdate) {
-  //         this.updatePanel();
-  //       }
-  //     });
-  // }
-
   private validade(content: any) {
     this._server.updateProperties(content)
-      .then(async () => {
+      .then((update: boolean) => {
         if (this._server.errors.length === 0) {
           this._server.validConnection().then((result) => {
             if (!result) {
               this._server.buildVersion = "";
               this._server.secure = false;
             }
+          }).then(() => {
+            this._server.connect().then((result) => {
+              if (result) {
+                serverManager.add(this._server);
+              }
+            }, (reason) => { vscode.window.showErrorMessage(reason); });
           }).finally(() => {
             this.updatePanel();
           });
@@ -185,7 +116,6 @@ class AddServerLoader {
   }
 
   private getWebViewContent(localizeHTML) {
-    //"Cannot read property 'tds.webview.newServer.title' of undefined"
     const cssContent = addServerCss();
     const htmlContent = addServerHtml({ localize: localizeHTML, css: cssContent });
 
@@ -193,44 +123,6 @@ class AddServerLoader {
 
     return runTemplate({ css: cssContent, localize: localizeHTML });
   }
-
-  // private _getWebviewContent(monitorItem: IMonitorItem): string {
-  //   // Local path to main script run in the webview
-  //   const reactAppPathOnDisk = vscode.Uri.file(
-  //     path.join(
-  //       this._extensionPath,
-  //       "out",
-  //       "webpack",
-  //       "addServer.js"
-  //     )
-  //   );
-  //   const reactAppUri = this._panel?.webview.asWebviewUri(reactAppPathOnDisk);
-  //   const configJson = JSON.stringify(monitorItem);
-
-  //   return `<!DOCTYPE html>
-  //   <html lang="en">
-  //   <head>
-  //       <meta charset="UTF-8">
-  //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  //       <title>Config View</title>
-
-  //       <meta http-equiv="Content-Security-Policy"
-  //                   content="default-src 'none';
-  //                            img-src https:;
-  //                            script-src 'unsafe-eval' 'unsafe-inline' vscode-resource:;
-  //                            style-src vscode-resource: 'unsafe-inline';">
-  //       <script>
-  //         window.acquireVsCodeApi = acquireVsCodeApi;
-  //         window.initialData = ${configJson};
-  //       </script>
-  //   </head>
-  //   <body>
-  //       <div id="root"></div>
-
-  //       <script crossorigin src="${reactAppUri}"></script>
-  //   </body>
-  //   </html>`;
-  // }
 
   private updatePanel(): void {
     this._panel?.webview.postMessage({

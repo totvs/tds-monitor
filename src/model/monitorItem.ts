@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import * as ini from 'ini';
 
 import { IMonitorItem, IError, createError, Severity } from '../monitorInterfaces';
 import { getLanguageClient } from '../ls/monitorClient';
@@ -82,9 +80,9 @@ export class MonitorItem implements IMonitorItem {
 
 		this.errors = [];
 
-		this.validateSmartClient().forEach((message: string) => {
-			error("smartClient", message);
-		});
+		// this.validateSmartClient().forEach((message: string) => {
+		// 	error("smartClient", message);
+		// });
 
 		if (this.name === "") { error("name", ATT_REQ); }
 		if (!(this.port > 0)) { error("port", ATT_REQ); }
@@ -93,53 +91,53 @@ export class MonitorItem implements IMonitorItem {
 
 	}
 
-	private validateSmartClient(): string[] {
-		const file = this.smartClient;
-		const problems: string[] = [];
+	// private validateSmartClient(): string[] {
+	// 	const file = this.smartClient;
+	// 	const problems: string[] = [];
 
-		if (file === "") {
-			problems.push(ATT_REQ);
-		} else {
-			const scFile = vscode.Uri.parse("file:///" + file);
+	// 	if (file === "") {
+	// 		problems.push(ATT_REQ);
+	// 	} else {
+	// 		const scFile = vscode.Uri.parse("file:///" + file);
 
-			if (fs.existsSync(scFile.fsPath)) {
-				const ext = path.extname(scFile.fsPath);
-				const configFile = scFile.fsPath.replace(ext, ext === ext.toLocaleLowerCase() ? ".ini" : ".INI");
+	// 		if (fs.existsSync(scFile.fsPath)) {
+	// 			const ext = path.extname(scFile.fsPath);
+	// 			const configFile = scFile.fsPath.replace(ext, ext === ext.toLocaleLowerCase() ? ".ini" : ".INI");
 
-				if (fs.existsSync(configFile)) {
-					if (this.address === "") {
-						try {
-							const buffer = fs.readFileSync(configFile);
-							const content = buffer.toString().toLowerCase();
-							const parseIni = ini.parse(content);
-							const drivers = parseIni.drivers;
-							const active = drivers.active;
-							const config = parseIni[active];
-							const address = config.server;
-							const port = config.port;
+	// 			if (fs.existsSync(configFile)) {
+	// 				if (this.address === "") {
+	// 					try {
+	// 						const buffer = fs.readFileSync(configFile);
+	// 						const content = buffer.toString().toLowerCase();
+	// 						const parseIni = ini.parse(content);
+	// 						const drivers = parseIni.drivers;
+	// 						const active = drivers.active;
+	// 						const config = parseIni[active];
+	// 						const address = config.server;
+	// 						const port = config.port;
 
-							if (this.address !== address) {
-								this.address = address;
-								this.buildVersion = "";
-							}
-							if (this.port !== port) {
-								this.port = port;
-								this.buildVersion = "";
-							}
-						} catch {
-							vscode.window.showWarningMessage(`Não foi possível obter os dados de conexão.\nArquivo: ${configFile}`);
-						}
-					}
-				} else {
-					problems.push("Arquivo de configuração não localizado. " + configFile);
-				}
-			} else {
-				problems.push("Arquivo não localizado.");
-			}
-		}
+	// 						if (this.address !== address) {
+	// 							this.address = address;
+	// 							this.buildVersion = "";
+	// 						}
+	// 						if (this.port !== port) {
+	// 							this.port = port;
+	// 							this.buildVersion = "";
+	// 						}
+	// 					} catch {
+	// 						vscode.window.showWarningMessage(`Não foi possível obter os dados de conexão.\nArquivo: ${configFile}`);
+	// 					}
+	// 				}
+	// 			} else {
+	// 				problems.push("Arquivo de configuração não localizado. " + configFile);
+	// 			}
+	// 		} else {
+	// 			problems.push("Arquivo não localizado.");
+	// 		}
+	// 	}
 
-		return problems;
-	}
+	// 	return problems;
+	// }
 
 	public isConnected(): boolean {
 		return this.token !== "";
@@ -192,6 +190,9 @@ export class MonitorItem implements IMonitorItem {
 			.then((value) => {
 				this.buildVersion = value.build;
 				this.secure = value.secure;
+				if (this.environments.indexOf(this.environment) === -1) {
+					this.environments.push(this.environment);
+				}
 				return true;
 			}, (reason) => {
 				throw reason;
