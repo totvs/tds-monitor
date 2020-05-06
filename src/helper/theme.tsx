@@ -23,7 +23,7 @@ export default function MonitorTheme(props: IMonitorThemeProps) {
           MuiPaper: {
             root: {
               backgroundColor: "#FDFDFD",
-              padding: 12,
+              padding: 6,
             },
             outlined: {
               borderLeftStyle: "solid",
@@ -36,6 +36,17 @@ export default function MonitorTheme(props: IMonitorThemeProps) {
               backgroundColor: "#FDFDFD",
             },
           },
+          MuiCard: {
+
+          },
+          MuiCardHeader: {
+            root: {
+            },
+            title: {
+              color: "silver",
+              fontSize: "medium"
+            }
+          }
         },
       }),
     [darkMode]

@@ -1,11 +1,14 @@
 import * as React from "react";
 import {
-  Typography,
   FormGroup,
   FormControlLabel,
   Checkbox,
   TextField,
   MenuItem,
+  Card,
+  CardHeader,
+  CardContent,
+  Avatar,
 } from "@material-ui/core";
 import { IWelcomePageAction, WelcomePageAction } from "../actions";
 
@@ -56,38 +59,47 @@ export default function SettingsPanel(props: ISettingsPanelProps) {
   };
 
   return (
-    <React.Fragment>
-      <Typography variant="subtitle2" component="h3">
-        <strong>Configurações Atuais</strong>
-      </Typography>
+    <Card variant="outlined" style={{height: 280}}>
+      <CardHeader
+        title="Configurações"
+        subheader="Determina o comportamento da extensão."
+        avatar={
+          <Avatar aria-label="recipe">
+            C
+          </Avatar>
+        }
+      />
 
-      <FormGroup row>
-        <TextField
-          select
-          label="Arquivo de definição"
-          value={state.serverJsonLocation}
-          onChange={handleServerLocationChange}
-          helperText="Indica qual arquivo de definição de servidores em uso."
-        >
-          {locationOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-      </FormGroup>
+      <CardContent>
+        <FormGroup row>
+          <TextField
+            select
+            label="Arquivo de servidores"
+            value={state.serverJsonLocation}
+            onChange={handleServerLocationChange}
+            helperText="Arquivo de servidores em uso."
+          >
+            {locationOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </FormGroup>
 
-      <FormGroup row>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={state.showWelcomePage}
-              onChange={handleShowWelcomeChange}
-            />
-          }
-          label="Apresentar esta página ao iniciar a extensão."
-        />
-      </FormGroup>
-    </React.Fragment>
+        <FormGroup row>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={state.showWelcomePage}
+                onChange={handleShowWelcomeChange}
+              />
+            }
+
+            label="Apresentar esta página ao iniciar a extensão."
+          />
+        </FormGroup>
+      </CardContent>
+    </Card>
   );
 }

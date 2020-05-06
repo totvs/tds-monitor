@@ -118,16 +118,12 @@ export class WelcomePageLoader {
     );
 
     const serverList: string[] = serverManager.getServers()
-      .filter((element: IMonitorItem) => (!element.isConnected()))
       .map((element: IMonitorItem) => {
         return element.name;
-      });
-
-    const connectedList: string[] = serverManager.getServers()
-      .filter((element: IMonitorItem) => (element.isConnected()))
-      .map((element: IMonitorItem) => {
-        return element.name;
-      });
+      }).sort((a: string, b: string) => {
+        return a.localeCompare(b);
+      }
+      );
 
     const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
     const initialData = JSON.stringify(
@@ -135,8 +131,7 @@ export class WelcomePageLoader {
         showWelcomePage: this.isShowWelcomePage(),
         serverJsonLocation: this.getServerJsonLocation(),
         optionsLocation: this.getOptionsLocation(),
-        serverList: serverList,
-        connectedList: connectedList
+        serverList: serverList
       });
 
     return `<!DOCTYPE html>

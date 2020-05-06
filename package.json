@@ -2,7 +2,7 @@
   "name": "tds-monitor",
   "displayName": "TDS Monitor for VSCode",
   "description": "%tds.package.description%",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "publisher": "TOTVS",
   "author": {
     "name": "TOTVS",
@@ -137,8 +137,8 @@
         "title": "Configuração",
         "category": "TDSMonitor",
         "icon": {
-          "light": "resources/light/settings.svn",
-          "dark": "resources/dark/settings.svn"
+          "light": "resources/light/settings.png",
+          "dark": "resources/dark/settings.png"
         }
       },
       {
