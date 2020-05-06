@@ -170,6 +170,15 @@
         }
       },
       {
+        "command": "tds-monitor.toggle2",
+        "title": "Monitorar",
+        "category": "TDSMonitor",
+        "icon": {
+          "light": "resources/light/monitor.png",
+          "dark": "resources/dark/monitor.png"
+        }
+      },
+      {
         "command": "tds-monitor.add-server-monitor",
         "title": "Adiciona o servidor na lista para monitoramento",
         "category": "TDSMonitor"
@@ -204,6 +213,11 @@
           "command": "tds-monitor.toggle",
           "when": "view == tds_monitor && viewItem == monitorItem",
           "group": "AAtotvsMonitor@1"
+        },
+        {
+          "command": "tds-monitor.toggle2",
+					"when": "view == totvs_server && viewItem == serverItem",
+					"group": "AAtotvsServer@1"
         },
         {
           "command": "tds-monitor.create",

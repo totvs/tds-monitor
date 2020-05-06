@@ -14,6 +14,7 @@ export class ServerCommands {
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.delete', (item: TreeMonitorItem) => { ServerCommands.deleteMonitor(item); }));
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.toggle', (item: TreeMonitorItem) => { ServerCommands.toggleMonitor(item.serverItem); }));
+        context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.toggle2', (item: TreeMonitorItem) => { ServerCommands.toggleMonitor(item.serverItem); }));
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.add-server-monitor', (serverItem: IMonitorItem) => { ServerCommands.toggleMonitor(serverItem); }));
 
         context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.open.configuration', () => ServerCommands.openConfiguration(context)));
