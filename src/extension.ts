@@ -1,44 +1,63 @@
 /*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
+ * Copyright (C) TOTVS S.A. All rights reserved.
  *--------------------------------------------------------*/
 
-'use strict';
-import { extensions, ExtensionContext, Uri } from 'vscode';
-import { MonitorsExplorer, connectMonitor, disconnectMonitor } from './monitorsView';
-import { getLanguageClient } from './TotvsLanguageClient';
+import vscode, { workspace, window, commands } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
-import * as nls from 'vscode-nls';
-import * as vscode from 'vscode';
-import { MonitorItem } from './monitor/monitorItem';
+import { ServerCommands } from './monitorCommands';
+import { getLanguageClient } from './ls/monitorClient';
+import { isConfigurationChanged } from './ls/languageServerSettings';
+import { showWelcomePage } from './welcome/welcomePageLoader';
+import { MonitorsExplorer } from './view/monitorsExplorer';
 
 export let languageClient: LanguageClient;
-let localize = nls.config({ locale: 'en' })();
 
-export function parseUri(u): Uri {
-	return Uri.parse(u);
+export async function activate(context: vscode.ExtensionContext) {
+  ServerCommands.register(context);
+  //context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.showWelcomePage', () => { showWelcomePage(true); }));
+
+  languageClient = await getLanguageClient();
+  context.subscriptions.push((languageClient).start());
+
+  context.subscriptions.push(
+    workspace.onDidChangeConfiguration(
+      (e: vscode.ConfigurationChangeEvent) => {
+        if (isConfigurationChanged()) {
+          window
+            .showInformationMessage(
+              "Please reload to apply the 'AdvPL.{0}' configuration change.",
+              "Reload"
+            )
+            .then(selected => {
+              if (selected === "Reload") {
+                commands.executeCommand("workbench.action.reloadWindow");
+              }
+            });
+        }
+      }
+    )
+  );
+
+  //View
+  let viewServer = new MonitorsExplorer(context);
+  if (!viewServer) {
+    window
+      .showErrorMessage("Não foi possível inicializar visão 'TOTVS Monitor'."
+      );
+  }
+
+  //Mostra a pagina de Boas Vindas.
+  showWelcomePage();
+  console.log('Congratulations, your extension "totvs-monitor" is now active!');
+  window.showWarningMessage(
+    'The extension "totvs-monitor" is now active!'
+  );
 }
 
-export function activate(context: ExtensionContext) {
+// this method is called when your extension is deactivated
+export function deactivate() {
+  console.log('Thank you for using our extension "totvs-monitor"!\nBye!!');
 
-	console.log(localize('tds.console.congratulations', 'Congratulations, your extension "totvs-monior" is now active!'));
-
-	//Load Language Client and start Language Server
-	let ext = extensions.getExtension("TOTVS.tds-monitor");
-	if (ext) {
-		languageClient = getLanguageClient(context);
-		context.subscriptions.push(languageClient.start());
-	}
-
-	//Register commands
-	//Comando de conexão ao monitor
-	context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.connect', (monitorItem) => connectMonitor(monitorItem, context)));
-	//Comando de desconexão do monitor
-	context.subscriptions.push(vscode.commands.registerCommand('tds-monitor.disconnect', (serverItem: MonitorItem) => disconnectMonitor(serverItem)));
-
-	//View
-	let viewMonitor = new MonitorsExplorer(context);
-	if (!viewMonitor) {
-		console.error(localize('tds.vscode.monitor_vision_not_load', 'Visão "Monitor" não incializada.'));
-	}
-
+  //Utils.deleteSelectServer();
 }
+
