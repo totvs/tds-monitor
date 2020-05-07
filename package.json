@@ -2,7 +2,7 @@
   "name": "tds-monitor",
   "displayName": "TDS Monitor for VSCode",
   "description": "%tds.package.description%",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "TOTVS",
   "author": {
     "name": "TOTVS",
@@ -15,7 +15,8 @@
     "4gl",
     "tds",
     "totvs",
-    "monitor"
+    "monitor",
+    "protheus"
   ],
   "engines": {
     "vscode": "^1.29.0",
