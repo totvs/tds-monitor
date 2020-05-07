@@ -12,20 +12,8 @@
 			"outFiles": [ "${workspaceFolder}/out/**/*.js" ],
 			"preLaunchTask": {
 				"type": "npm",
-				"script": "watch"
+				"script": "compile"
 			}
-		},
-		{
-			"type": "cppvsdbg",
-			"request": "launch",
-			"name": "Server",
-			"cwd": "${workspaceFolder}/out",
-			"program": "${workspaceFolder}/out/debugAdapter.exe",
-			"internalConsoleOptions": "openOnSessionStart",
-			"stopAtEntry": false,
-			"args": [
-				""
-			]
 		},
 		{
 			"type": "node",
