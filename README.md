@@ -1,5 +1,11 @@
 # TOTVS Developer Studio Monitor
 
+# Essa é uma versão BETA do produto, que não deve ser usada em produção.
+
+## Este plugin será incorporado ao plugin abaixo até o final do mes de Julho/2020:
+
+[Totvs Developer Studio for VSCode (AdvPL, TLPP e 4GL)](https://marketplace.visualstudio.com/items?itemName=totvs.tds-vscode)
+
 O plugin do TOTVS Developer Studio Monitor disponibiliza as funcionalidades do antigo Totvs Monitor dentro do VScode.
 Ele utiliza os protocolos de comunicação LSP (Language Server Protocol) que é extensível à outras IDEs de mercado, como Atom, Visual Studio, Eclipse, Eclipse Theia, Vim e Emacs.
 
