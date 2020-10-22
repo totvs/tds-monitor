@@ -1,4 +1,4 @@
-# TOTVS Developer Studio Monitor
+# TOTVS Developer Studio Monitor (Descontinuado)
 
 # Essa é uma versão BETA do produto, que não deve ser usada em produção.
 
