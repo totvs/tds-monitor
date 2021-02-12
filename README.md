@@ -1,7 +1,5 @@
 # TOTVS Developer Studio Monitor (Descontinuado)
 
-# Essa é uma versão BETA do produto, que não deve ser usada em produção.
-
 ## Esta extensão foi incorporada a extensão abaixo:
 
 [Totvs Developer Studio for VSCode (AdvPL, TLPP e 4GL)](https://marketplace.visualstudio.com/items?itemName=totvs.tds-vscode)
